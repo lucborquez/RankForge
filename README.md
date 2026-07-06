@@ -71,7 +71,7 @@ HeidiSQL fue utilizado para administrar las bases de datos, permitiendo visualiz
 
 
 
-## . Capa de Modelo y Anotaciones
+## Capa de Modelo y Anotaciones
 Se utiliza el ecosistema de Spring Data JPA y Lombok para maximizar la productividad y garantizar la integridad de los datos:
 
 Lombok: @Data, @AllArgsConstructor, @NoArgsConstructor, @Builder y @Getter/@Setter para reducir el código redundante.
