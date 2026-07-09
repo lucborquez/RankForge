@@ -31,13 +31,16 @@ public class Inscripcion {
 
     /*
      Estados:
-     PENDIENTE  → recién creada
+     PENDIENTE  → recien creada
      ACEPTADA   → confirmada
      CANCELADA  → cancelada
+
     */
     @Column(nullable = false)
     private String estado = "PENDIENTE";
 
     @Column(nullable = false)
     private LocalDate fechaInscripcion;
+
+    //PRUEBA GIT
 }
