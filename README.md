@@ -40,7 +40,7 @@ La solución fue diseñada bajo una arquitectura de microservicios independiente
 
 ## Tecnologias usadas
 ## Backend
-1. Java 21
+1. JDK 26
 2. Spring boot
 3. Spring Data JPA
 4. Hibernate
@@ -55,6 +55,10 @@ Para la persistencia se utilizó:
 3. HeidiSQL
 Laragon fue utilizado como entorno local de desarrollo debido a su facilidad de configuración, integración rápida con MySQL y administración eficiente de servicios locales.
 HeidiSQL fue utilizado para administrar las bases de datos, permitiendo visualizar tablas, ejecutar consultas SQL y verificar relaciones de manera más profesional y práctica durante el desarrollo.
+
+Para el entorno local, inicia MySQL antes de ejecutar los servicios. Cada servicio usa su propia base y MySQL la crea al conectar si el usuario tiene permiso. Si trabajas con un usuario sin ese permiso, crea las bases indicadas en los archivos `application.properties` antes del arranque.
+
+Usa `.env.example` como referencia. Si tu instalación requiere otro host, puerto, usuario o contraseña, define `DB_HOST`, `DB_PORT`, `DB_USERNAME` y `DB_PASSWORD` en el entorno desde el que ejecutas Java. En PowerShell, por ejemplo, `$env:DB_USERNAME = 'mi_usuario'`. Inicia Eureka en el puerto 8761, luego los microservicios y finalmente el Gateway en el puerto 8080.
 
 ## Flujo principal
 1. Crear videojuego        -> game-service
