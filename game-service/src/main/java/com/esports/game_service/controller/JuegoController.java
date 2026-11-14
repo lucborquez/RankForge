@@ -28,6 +28,11 @@ public class JuegoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(juegoService.crear(dto));
     }
 
+    @GetMapping
+    public ResponseEntity<List<JuegoResponseDTO>> listarActivos() {
+        return ResponseEntity.ok(juegoService.listarActivos());
+    }
+
     //GET -> buscar por ID
     @GetMapping("/{id}")
     public ResponseEntity<JuegoResponseDTO> buscar(@PathVariable Long id) {
