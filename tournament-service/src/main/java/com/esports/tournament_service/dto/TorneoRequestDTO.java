@@ -7,9 +7,11 @@ import lombok.Data;
 public class TorneoRequestDTO {
 
     @NotBlank(message = "El nombre es obligatorio")
+    @Size(max = 255)
     private String nombre;
 
     @NotNull(message = "El juego es obligatorio")
+    @Positive
     private Long juegoId;
 
     @NotBlank(message = "La fecha de inicio es obligatoria")
@@ -26,5 +28,6 @@ public class TorneoRequestDTO {
     private Integer cupoMaximo;
 
     @NotBlank(message = "La modalidad es obligatoria")
+    @Size(max = 255)
     private String modalidad;
 }

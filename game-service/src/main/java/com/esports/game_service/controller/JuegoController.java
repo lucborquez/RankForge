@@ -1,11 +1,8 @@
 package com.esports.game_service.controller;
 
 
-import com.esports.game_service.dto.JuegoRequestDTO;
 import com.esports.game_service.dto.JuegoResponseDTO;
 import com.esports.game_service.service.JuegoService;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,34 +19,15 @@ public class JuegoController {
         this.juegoService = juegoService;
     }
 
-    //POST -> Crear juegos
-    @PostMapping
-    public ResponseEntity<JuegoResponseDTO> crear(@Valid @RequestBody JuegoRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(juegoService.crear(dto));
-    }
-
     @GetMapping
     public ResponseEntity<List<JuegoResponseDTO>> listarActivos() {
         return ResponseEntity.ok(juegoService.listarActivos());
     }
 
     //GET -> buscar por ID
-    @GetMapping("/{id}")
+    @GetMapping("/{id:[0-9]+}")
     public ResponseEntity<JuegoResponseDTO> buscar(@PathVariable Long id) {
         return ResponseEntity.ok(juegoService.buscarPorId(id));
     }
 
-    //PUT -> actualizar juego
-    @PutMapping("/{id}")
-    public ResponseEntity<JuegoResponseDTO> actualizar(@PathVariable Long id, @Valid @RequestBody JuegoRequestDTO dto) {
-        return ResponseEntity.ok(juegoService.actualizar(id, dto));
-    }
-
-    //DELETE -> Desactivar juego
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> desactivar(@PathVariable Long id) {
-        juegoService.desactivar(id);
-        return ResponseEntity.noContent().build();
-    }
 }
-//

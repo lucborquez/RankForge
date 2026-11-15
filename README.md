@@ -60,6 +60,19 @@ Para el entorno local, inicia MySQL antes de ejecutar los servicios. Cada servic
 
 Usa `.env.example` como referencia. Si tu instalación requiere otro host, puerto, usuario o contraseña, define `DB_HOST`, `DB_PORT`, `DB_USERNAME` y `DB_PASSWORD` en el entorno desde el que ejecutas Java. En PowerShell, por ejemplo, `$env:DB_USERNAME = 'mi_usuario'`. Inicia Eureka en el puerto 8761, luego los microservicios y finalmente el Gateway en el puerto 8080.
 
+## Administración local y Swagger
+
+Para probar la administración desde React, inicia `game-service`, `tournament-service` y `api-gateway` con `--spring.profiles.active=local-admin`. Los tres escucharán en `127.0.0.1`. El Gateway acepta peticiones de escritura del frontend local en el puerto 5173. Arranca los servicios en el mismo equipo junto a MySQL y Eureka.
+
+Los endpoints de escritura de juegos y torneos están disponibles únicamente con ese perfil de desarrollo. La autenticación y la autorización de escritura para despliegues se implementarán en la etapa de seguridad.
+
+| Servicio | Swagger UI | OpenAPI JSON |
+| --- | --- | --- |
+| Juegos | [Swagger en 8081](http://127.0.0.1:8081/swagger-ui/index.html) | [JSON en 8081](http://127.0.0.1:8081/v3/api-docs) |
+| Torneos | [Swagger en 8085](http://127.0.0.1:8085/swagger-ui/index.html) | [JSON en 8085](http://127.0.0.1:8085/v3/api-docs) |
+
+Las rutas actuales `/api/juegos` y `/api/torneos` se mantienen para el frontend. Un futuro `/api/v1` podrá convivir con ellas durante la migración de los clientes.
+
 ## Flujo principal
 1. Crear videojuego        -> game-service
 2. Crear usuarios          -> user-service

@@ -2,8 +2,6 @@ package com.esports.tournament_service.controller;
 
 import com.esports.tournament_service.dto.*;
 import com.esports.tournament_service.service.TorneoService;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -16,14 +14,6 @@ public class TorneoController {
 
     public TorneoController(TorneoService torneoService) {
         this.torneoService = torneoService;
-    }
-
-    // POST /api/torneos
-    @PostMapping
-    public ResponseEntity<TorneoResponseDTO> crear(
-            @Valid @RequestBody TorneoRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(torneoService.crear(dto));
     }
 
     // GET /api/torneos
@@ -41,22 +31,6 @@ public class TorneoController {
     @GetMapping("/{id}")
     public ResponseEntity<TorneoResponseDTO> buscar(@PathVariable Long id) {
         return ResponseEntity.ok(torneoService.buscarPorId(id));
-    }
-
-    // PUT /api/torneos/1
-    @PutMapping("/{id}")
-    public ResponseEntity<TorneoResponseDTO> actualizar(
-            @PathVariable Long id,
-            @Valid @RequestBody TorneoRequestDTO dto) {
-        return ResponseEntity.ok(torneoService.actualizar(id, dto));
-    }
-
-    // PATCH /api/torneos/1/estado → Cambiar solo el estado
-    @PatchMapping("/{id}/estado")
-    public ResponseEntity<TorneoResponseDTO> cambiarEstado(
-            @PathVariable Long id,
-            @Valid @RequestBody CambioEstadoDTO dto) {
-        return ResponseEntity.ok(torneoService.cambiarEstado(id, dto));
     }
 
     // GET /api/torneos/1/abierto → Para consultas de otros servicios

@@ -3,12 +3,14 @@ package com.esports.game_service.service;
 
 import com.esports.game_service.dto.JuegoRequestDTO;
 import com.esports.game_service.dto.JuegoResponseDTO;
+import com.esports.game_service.exception.JuegoNombreDuplicadoException;
 import com.esports.game_service.exception.JuegoNotFoundException;
 import com.esports.game_service.model.Juego;
 import com.esports.game_service.repository.JuegoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,7 +30,7 @@ public class JuegoService {
     public JuegoResponseDTO crear(JuegoRequestDTO dto) {
         // Verificar que no exista otro juego con el mismo nombre
         juegoRepository.findByNombre(dto.getNombre()).ifPresent(j -> {
-            throw new RuntimeException("Ya existe un juego con el nombre: " + dto.getNombre());
+            throw new JuegoNombreDuplicadoException();
         });
 
         Juego juego = new Juego();
@@ -47,6 +49,10 @@ public class JuegoService {
         return juegoRepository.findByEstadoTrue().stream().map(this::convertirAResponse).collect(Collectors.toList());
     }
 
+    public List<JuegoResponseDTO> listarTodos() {
+        return juegoRepository.findAll().stream().map(this::convertirAResponse).toList();
+    }
+
     //Buscar juegos por id
     public JuegoResponseDTO buscarPorId(Long id) {
         Juego juego = juegoRepository.findById(id).orElseThrow(() -> new JuegoNotFoundException(id));
@@ -54,8 +60,9 @@ public class JuegoService {
     }
 
     //Actualizar modalidad o reglas
+    @Transactional
     public JuegoResponseDTO actualizar(Long id, JuegoRequestDTO dto) {
-        Juego juego = juegoRepository.findById(id).orElseThrow(() -> new JuegoNotFoundException(id));
+        Juego juego = juegoRepository.buscarParaActualizar(id).orElseThrow(() -> new JuegoNotFoundException(id));
 
         juego.setNombre(dto.getNombre());
         juego.setGenero(dto.getGenero());
@@ -68,8 +75,9 @@ public class JuegoService {
     }
 
     //Desactivar un juego(pasa a estar inactivo)
+    @Transactional
     public void desactivar(Long id) {
-        Juego juego = juegoRepository.findById(id).orElseThrow(() -> new JuegoNotFoundException(id));
+        Juego juego = juegoRepository.buscarParaActualizar(id).orElseThrow(() -> new JuegoNotFoundException(id));
         juego.setEstado(false);
         juegoRepository.save(juego);
         log.info("Juego desactivado: ID {}", id);

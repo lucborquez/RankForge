@@ -7,7 +7,12 @@ import com.esports.tournament_service.repository.TorneoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,24 +31,8 @@ public class TorneoService {
 
     // Crear torneo
     public TorneoResponseDTO crear(TorneoRequestDTO dto) {
-        // Verificar que el juego existe en game-service
-        if (!juegoClient.juegoExiste(dto.getJuegoId())) {
-            throw new RuntimeException("El juego no existe o está inactivo");
-        }
-
-        // Validar que fecha inicio sea posterior al cierre de inscripción
-        if (dto.getFechaInicio().compareTo(dto.getFechaCierreInscripcion()) <= 0) {
-            throw new RuntimeException(
-                    "La fecha de inicio debe ser posterior al cierre de inscripción"
-            );
-        }
-
-        // Validar que fecha fin sea posterior a fecha inicio
-        if (dto.getFechaFin().compareTo(dto.getFechaInicio()) <= 0) {
-            throw new RuntimeException(
-                    "La fecha de fin debe ser posterior a la fecha de inicio"
-            );
-        }
+        validarFechas(dto);
+        validarJuegoActivo(dto.getJuegoId());
 
         Torneo torneo = new Torneo();
         torneo.setNombre(dto.getNombre());
@@ -89,8 +78,9 @@ public class TorneoService {
     }
 
     // Actualizar fechas, cupos o modalidad
+    @Transactional
     public TorneoResponseDTO actualizar(Long id, TorneoRequestDTO dto) {
-        Torneo torneo = torneoRepository.findById(id)
+        Torneo torneo = torneoRepository.buscarParaActualizar(id)
                 .orElseThrow(() -> new RuntimeException(
                         "Torneo no encontrado con ID: " + id));
 
@@ -99,6 +89,11 @@ public class TorneoService {
             throw new RuntimeException(
                     "No se puede modificar un torneo que está en curso"
             );
+        }
+
+        validarFechas(dto);
+        if (!Objects.equals(torneo.getJuegoId(), dto.getJuegoId())) {
+            validarJuegoActivo(dto.getJuegoId());
         }
 
         torneo.setNombre(dto.getNombre());
@@ -115,19 +110,51 @@ public class TorneoService {
     }
 
     // Cambiar estado del torneo
+    @Transactional
     public TorneoResponseDTO cambiarEstado(Long id, CambioEstadoDTO dto) {
-        Torneo torneo = torneoRepository.findById(id)
+        Torneo torneo = torneoRepository.buscarParaActualizar(id)
                 .orElseThrow(() -> new RuntimeException(
                         "Torneo no encontrado con ID: " + id));
 
         // Validar transiciones de estado permitidas
-        validarTransicionEstado(torneo.getEstado(), dto.getEstado());
+        String estadoAnterior = torneo.getEstado();
+        validarTransicionEstado(estadoAnterior, dto.getEstado());
+        if ("ABIERTO".equals(dto.getEstado())) validarJuegoActivo(torneo.getJuegoId());
 
         torneo.setEstado(dto.getEstado());
         Torneo actualizado = torneoRepository.save(torneo);
         log.info("Torneo ID {} cambió estado: {} → {}",
-                id, torneo.getEstado(), dto.getEstado());
+                id, estadoAnterior, dto.getEstado());
         return convertirAResponse(actualizado);
+    }
+
+    private void validarJuegoActivo(Long juegoId) {
+        if (!juegoClient.juegoExiste(juegoId)) {
+            throw new IllegalArgumentException("El juego no existe o está inactivo");
+        }
+    }
+
+    private void validarFechas(TorneoRequestDTO dto) {
+        LocalDateTime cierre = leerFecha(dto.getFechaCierreInscripcion());
+        LocalDateTime inicio = leerFecha(dto.getFechaInicio());
+        LocalDateTime fin = leerFecha(dto.getFechaFin());
+        if (!inicio.isAfter(cierre)) {
+            throw new IllegalArgumentException("La fecha de inicio debe ser posterior al cierre de inscripción");
+        }
+        if (!fin.isAfter(inicio)) {
+            throw new IllegalArgumentException("La fecha de fin debe ser posterior a la fecha de inicio");
+        }
+    }
+
+    private LocalDateTime leerFecha(String valor) {
+        try {
+            // Los registros anteriores pueden contener una fecha sola o una fecha con hora.
+            return valor.length() == 10
+                    ? LocalDate.parse(valor).atStartOfDay()
+                    : LocalDateTime.parse(valor.replace(' ', 'T'));
+        } catch (DateTimeParseException ex) {
+            throw new IllegalArgumentException("Usa fechas y horas en formato ISO", ex);
+        }
     }
 
     // Verifica que la transición de estado sea válida
