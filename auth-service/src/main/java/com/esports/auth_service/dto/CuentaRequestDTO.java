@@ -16,6 +16,5 @@ public class CuentaRequestDTO {
     @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
     private String password;
 
-    @NotBlank(message = "El rol es obligatorio")
     private String rol;
 }

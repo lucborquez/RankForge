@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService {
@@ -40,7 +42,7 @@ public class AuthService {
         cuenta.setEmail(dto.getEmail());
         // Encriptamos la contraseña antes de guardar
         cuenta.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
-        cuenta.setRol(dto.getRol());
+        cuenta.setRol("JUGADOR");
         cuenta.setFechaCreacion(LocalDate.parse(LocalDate.now().toString()));
 
         CuentaAcceso guardada = cuentaRepository.save(cuenta);
@@ -52,23 +54,32 @@ public class AuthService {
     public LoginResponseDTO login(LoginRequestDTO dto) {
         // Buscar la cuenta por email
         CuentaAcceso cuenta = cuentaRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new RuntimeException("Credenciales incorrectas"));
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Credenciales incorrectas"));
 
-        // Verificar que la cuenta esté activa
-        if (!cuenta.getEstado()) {
-            throw new RuntimeException("La cuenta está desactivada");
+        // Verificar que la cuenta este activa
+        if (!Boolean.TRUE.equals(cuenta.getEstado())) {
+            throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Credenciales incorrectas");
         }
 
-        // Comparar la contraseña ingresada con la encriptada en BD
+        // Verificar contraseña
         if (!passwordEncoder.matches(dto.getPassword(), cuenta.getPasswordHash())) {
-            throw new RuntimeException("Credenciales incorrectas");
+            throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Credenciales incorrectas");
         }
 
-        // Generar el token JWT
-        String token = jwtUtil.generarToken(cuenta.getEmail(), cuenta.getRol());
+        // Generar token JWT
+        String token = jwtUtil.generarToken(
+            cuenta.getEmail(), cuenta.getRol());
+
         log.info("Login exitoso: {}", cuenta.getEmail());
 
-        return new LoginResponseDTO(token, cuenta.getEmail(), cuenta.getRol());
+        return new LoginResponseDTO(
+            token, cuenta.getEmail(), cuenta.getRol());
     }
 
     // Listar cuentas
