@@ -112,6 +112,31 @@ public class TeamService {
         return convertirMiembroAResponse(guardado);
     }
 
+    // La identidad del actor debe proceder de un JWT validado, nunca del body.
+    @org.springframework.transaction.annotation.Transactional
+    public void quitarMiembro(Long equipoId, Long miembroId, Long actorId, boolean administrador) {
+        Equipo equipo = equipoRepository.findById(equipoId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Equipo no encontrado"));
+        if (!administrador && (actorId == null || !actorId.equals(equipo.getCapitanId()))) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN, "Solo el capitán puede gestionar integrantes");
+        }
+        if (!Boolean.TRUE.equals(equipo.getEstado())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.CONFLICT, "El equipo está inactivo");
+        }
+        MiembroEquipo miembro = miembroRepository.findById(miembroId)
+                .filter(m -> equipoId.equals(m.getEquipoId()))
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Integrante no encontrado en el equipo"));
+        if (equipo.getCapitanId().equals(miembro.getUsuarioId())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.CONFLICT, "No se puede quitar al capitán");
+        }
+        miembroRepository.delete(miembro);
+    }
+
     // Desactivar equipo
     public void desactivar(Long id) {
         Equipo equipo = equipoRepository.findById(id)
