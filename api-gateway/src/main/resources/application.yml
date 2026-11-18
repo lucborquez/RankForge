@@ -71,3 +71,6 @@ eureka:
 
 rankforge:
   frontend-origins: "${FRONTEND_ORIGINS:http://localhost:5173,https://frontend-e-sports-arena-manager.vercel.app}"
+
+jwt:
+  secret: ${JWT_SECRET}
