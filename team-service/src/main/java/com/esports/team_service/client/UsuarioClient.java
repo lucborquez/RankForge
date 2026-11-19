@@ -21,6 +21,34 @@ public class UsuarioClient {
         this.restTemplate = new RestTemplate();
     }
 
+    public record Actor(Long id, String rol, Boolean estado) {
+        public boolean administrador() { return "ADMIN".equals(rol); }
+    }
+
+    /** La identidad procede de user-service, que verifica la firma JWT. */
+    public Actor autenticar(String authorization) {
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.UNAUTHORIZED, "Inicia sesión");
+        }
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("Authorization", authorization);
+        try {
+            Actor actor = restTemplate.exchange(userServiceUrl + "/api/usuarios/me",
+                    org.springframework.http.HttpMethod.GET, new org.springframework.http.HttpEntity<>(headers), Actor.class).getBody();
+            if (actor == null || actor.id() == null || !Boolean.TRUE.equals(actor.estado())) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.FORBIDDEN, "Perfil no disponible");
+            }
+            return actor;
+        } catch (org.springframework.web.client.HttpClientErrorException ex) {
+            throw new org.springframework.web.server.ResponseStatusException(ex.getStatusCode(), "Perfil no autorizado");
+        } catch (org.springframework.web.client.RestClientException ex) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE, "No se pudo validar la identidad");
+        }
+    }
+
     // Consulta a user-service si el usuario existe y está activo
     public boolean usuarioExisteYEstaActivo(Long usuarioId) {
         try {

@@ -24,6 +24,56 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
+    public UsuarioResponseDTO asegurarPerfil(String email, String rol) {
+        var existente = usuarioRepository.findByEmail(email);
+        if (existente.isPresent()) return convertirAResponse(perfilActivo(existente.get()));
+        Usuario usuario = new Usuario();
+        usuario.setEmail(email);
+        usuario.setRol(rol);
+        usuario.setNombre(email.substring(0, email.indexOf('@') > 0 ? email.indexOf('@') : email.length()));
+        usuario.setApodo("jugador-" + java.util.UUID.randomUUID().toString().substring(0, 24));
+        usuario.setFechaRegistro(LocalDate.now());
+        try {
+            return convertirAResponse(usuarioRepository.saveAndFlush(usuario));
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            // Dos pestañas pueden solicitar simultáneamente la creación del mismo perfil.
+            return usuarioRepository.findByEmail(email).map(this::perfilActivo).map(this::convertirAResponse)
+                    .orElseThrow(() -> ex);
+        }
+    }
+
+    public UsuarioResponseDTO perfilPorEmail(String email) {
+        return convertirAResponse(obtenerPerfil(email));
+    }
+
+    public UsuarioResponseDTO actualizarPerfil(String email, com.esports.user_service.dto.PerfilRequestDTO dto) {
+        Usuario usuario = obtenerPerfil(email);
+        String apodo = dto.apodo().trim();
+        if (apodo.length() < 3 || dto.nombre().isBlank()) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "Nombre o apodo inválido");
+        }
+        usuarioRepository.findByApodo(apodo).filter(otro -> !otro.getId().equals(usuario.getId())).ifPresent(otro -> {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.CONFLICT, "El apodo ya está en uso");
+        });
+        usuario.setNombre(dto.nombre().trim());
+        usuario.setApodo(apodo);
+        return convertirAResponse(usuarioRepository.save(usuario));
+    }
+
+    private Usuario obtenerPerfil(String email) {
+        return perfilActivo(usuarioRepository.findByEmail(email).orElseThrow(() ->
+                new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Perfil no creado")));
+    }
+
+    private Usuario perfilActivo(Usuario usuario) {
+        if (!Boolean.TRUE.equals(usuario.getEstado())) throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.FORBIDDEN, "Perfil desactivado");
+        return usuario;
+    }
+
     public UsuarioResponseDTO crear(UsuarioRequestDTO dto) {
         usuarioRepository.findByApodo(dto.getApodo()).ifPresent(u ->{
             throw new RuntimeException("Ya existe un usuario con el Apodo: " + dto.getApodo());
@@ -88,6 +138,7 @@ public class UsuarioService {
         r.setApodo(u.getApodo());
         r.setEmail(u.getEmail());
         r.setRol(u.getRol());
+        r.setEstado(u.getEstado());
         r.setFechaRegistro(u.getFechaRegistro());
         return r;
     }

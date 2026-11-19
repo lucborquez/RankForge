@@ -13,14 +13,19 @@ import java.util.List;
 public class TeamController {
 
     private final TeamService teamService;
+    private final com.esports.team_service.client.UsuarioClient usuarios;
 
-    public TeamController(TeamService teamService) {
+    public TeamController(TeamService teamService, com.esports.team_service.client.UsuarioClient usuarios) {
         this.teamService = teamService;
+        this.usuarios = usuarios;
     }
 
     // POST /api/equipos
     @PostMapping
-    public ResponseEntity<EquipoResponseDTO> crear(@Valid @RequestBody EquipoRequestDTO dto) {
+    public ResponseEntity<EquipoResponseDTO> crear(@Valid @RequestBody EquipoRequestDTO dto,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        var actor = usuarios.autenticar(authorization);
+        dto.setCapitanId(actor.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(teamService.crear(dto));
     }
 
@@ -40,7 +45,9 @@ public class TeamController {
     @PutMapping("/{id}")
     public ResponseEntity<EquipoResponseDTO> actualizar(
             @PathVariable Long id,
-            @Valid @RequestBody EquipoRequestDTO dto) {
+            @Valid @RequestBody EquipoRequestDTO dto,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        autorizar(id, authorization);
         return ResponseEntity.ok(teamService.actualizar(id, dto));
     }
 
@@ -48,14 +55,18 @@ public class TeamController {
     @PostMapping("/{equipoId}/miembros")
     public ResponseEntity<MiembroResponseDTO> agregarMiembro(
             @PathVariable Long equipoId,
-            @Valid @RequestBody MiembroRequestDTO dto) {
+            @Valid @RequestBody MiembroRequestDTO dto,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        autorizar(equipoId, authorization);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(teamService.agregarMiembro(equipoId, dto));
     }
 
     // DELETE /api/equipos/1
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> desactivar(@PathVariable Long id) {
+    public ResponseEntity<Void> desactivar(@PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        autorizar(id, authorization);
         teamService.desactivar(id);
         return ResponseEntity.noContent().build();
     }
@@ -64,5 +75,22 @@ public class TeamController {
     @GetMapping("/{id}/activo")
     public ResponseEntity<Boolean> verificarActivo(@PathVariable Long id) {
         return ResponseEntity.ok(teamService.existeYEstaActivo(id));
+    }
+
+    @DeleteMapping("/{equipoId}/miembros/{miembroId}")
+    public ResponseEntity<Void> quitarMiembro(@PathVariable Long equipoId, @PathVariable Long miembroId,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        var actor = usuarios.autenticar(authorization);
+        teamService.quitarMiembro(equipoId, miembroId, actor.id(), actor.administrador());
+        return ResponseEntity.noContent().build();
+    }
+
+    private void autorizar(Long equipoId, String authorization) {
+        var actor = usuarios.autenticar(authorization);
+        var equipo = teamService.buscarPorId(equipoId);
+        if (!actor.administrador() && !actor.id().equals(equipo.getCapitanId())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "Solo el capitán puede gestionar este equipo");
+        }
     }
 }

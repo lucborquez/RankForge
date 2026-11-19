@@ -28,6 +28,7 @@ public class TeamService {
     }
 
     // Crear equipo
+    @org.springframework.transaction.annotation.Transactional
     public EquipoResponseDTO crear(EquipoRequestDTO dto) {
         // Verificar que el capitán existe y está activo en user-service
         if (!usuarioClient.usuarioExisteYEstaActivo(dto.getCapitanId())) {
@@ -72,8 +73,11 @@ public class TeamService {
         Equipo equipo = equipoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Equipo no encontrado con ID: " + id));
 
+        if (!Boolean.TRUE.equals(equipo.getEstado()) || !equipo.getCapitanId().equals(dto.getCapitanId())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.CONFLICT, "No se puede cambiar el capitán ni editar un equipo inactivo");
+        }
         equipo.setNombre(dto.getNombre());
-        equipo.setCapitanId(dto.getCapitanId());
         equipo.setJuegoPrincipalId(dto.getJuegoPrincipalId());
 
         Equipo actualizado = equipoRepository.save(equipo);
@@ -83,6 +87,9 @@ public class TeamService {
 
     // Agregar miembro al equipo
     public MiembroResponseDTO agregarMiembro(Long equipoId, MiembroRequestDTO dto) {
+        if (!"JUGADOR".equals(dto.getRolDentroEquipo())) {
+            throw new IllegalArgumentException("Los nuevos integrantes deben tener rol JUGADOR");
+        }
         // Verificar que el equipo existe y está activo
         Equipo equipo = equipoRepository.findById(equipoId)
                 .orElseThrow(() -> new RuntimeException("Equipo no encontrado"));
