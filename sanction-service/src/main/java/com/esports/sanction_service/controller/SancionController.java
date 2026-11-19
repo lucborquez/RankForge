@@ -56,6 +56,11 @@ public class SancionController {
         return ResponseEntity.ok(sancionService.tieneSancionActiva(usuarioId));
     }
 
+    @GetMapping("/equipo/{equipoId}/activa")
+    public ResponseEntity<Boolean> equipoTieneSancionActiva(@PathVariable Long equipoId) {
+        return ResponseEntity.ok(sancionService.equipoTieneSancionActiva(equipoId));
+    }
+
     // PUT /api/sanciones/{id} → Actualizar sancion
     @PutMapping("/{id}")
     public ResponseEntity<SancionResponseDTO> actualizar(

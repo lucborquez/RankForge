@@ -17,9 +17,16 @@ public class SancionService {
 
     private static final Logger log = LoggerFactory.getLogger(SancionService.class);
     private final SancionRepository sancionRepository;
+    private final java.time.Clock reloj;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public SancionService(SancionRepository sancionRepository) {
+        this(sancionRepository, java.time.Clock.system(java.time.ZoneId.of("America/Santiago")));
+    }
+
+    public SancionService(SancionRepository sancionRepository, java.time.Clock reloj) {
         this.sancionRepository = sancionRepository;
+        this.reloj = reloj;
     }
 
     // Crear una nueva sancion
@@ -85,7 +92,20 @@ public class SancionService {
     // Verificar si un usuario tiene sancion activa (para otros microservicios)
     public Boolean tieneSancionActiva(Long usuarioId) {
         log.info("Verificando sancion activa para usuarioId: {}", usuarioId);
-        return !sancionRepository.findByUsuarioIdAndEstadoTrue(usuarioId).isEmpty();
+        return sancionRepository.findByUsuarioIdAndEstadoTrue(usuarioId).stream().anyMatch(this::vigente);
+    }
+
+    public Boolean equipoTieneSancionActiva(Long equipoId) {
+        return sancionRepository.findByEquipoId(equipoId).stream().anyMatch(this::vigente);
+    }
+
+    private boolean vigente(Sancion sancion) {
+        if (!Boolean.TRUE.equals(sancion.getEstado())) return false;
+        java.time.LocalDate hoy = java.time.LocalDate.now(reloj);
+        // Un registro incompleto requiere revisión y no habilita al participante.
+        if (sancion.getFechaInicio() == null || sancion.getFechaFin() == null) return true;
+        if (sancion.getFechaFin().isBefore(sancion.getFechaInicio())) return true;
+        return !hoy.isBefore(sancion.getFechaInicio()) && !hoy.isAfter(sancion.getFechaFin());
     }
 
     // Actualizar motivo, severidad o fechas de una sancion

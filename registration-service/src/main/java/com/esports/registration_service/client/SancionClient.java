@@ -25,12 +25,11 @@ public class SancionClient {
         this.sanctionServiceUrl = sanctionServiceUrl;
     }
 
-    public record Sancion(Boolean estado) {}
     public boolean equipoSancionado(Long equipoId) {
         try {
-            Sancion[] sanciones = restTemplate.getForObject(sanctionServiceUrl + "/api/sanciones/equipo/" + equipoId, Sancion[].class);
-            if (sanciones == null) throw new IllegalStateException("Respuesta vacía");
-            return java.util.Arrays.stream(sanciones).anyMatch(s -> s == null || !Boolean.FALSE.equals(s.estado()));
+            Boolean vigente = restTemplate.getForObject(sanctionServiceUrl + "/api/sanciones/equipo/" + equipoId + "/activa", Boolean.class);
+            if (vigente == null) throw new IllegalStateException("Respuesta vacía");
+            return vigente;
         } catch (Exception ex) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE, "No se pudieron comprobar las sanciones del equipo");

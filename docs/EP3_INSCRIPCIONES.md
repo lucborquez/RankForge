@@ -8,6 +8,8 @@ Para equipos se verifica estado activo, juego compatible, cantidad exacta de int
 
 ## Verificación y límites
 
-26 pruebas unitarias aprobadas: plazo (5), reglas de inscripción (6), autorización (5), reglas de equipo (7) y fallo del cliente de sanciones (3). Los servicios remotos se simulan: falta validación E2E con MySQL y servicios activos.
+28 pruebas unitarias aprobadas en registration-service: plazo (5), reglas de inscripción (6), autorización (5), reglas de equipo (7) y cliente de sanciones (5). En sanction-service pasan otras 7 pruebas de vigencia temporal. Los servicios remotos se simulan: falta validación E2E con MySQL y servicios activos.
 
-Pendiente garantizar cupos y duplicados ante solicitudes concurrentes, comprobar modalidad del torneo y revisar la vigencia temporal de sanciones, además de conectar la pantalla real de inscripción. Estas pruebas no certifican todavía el flujo completo ni la entrega final.
+Las sanciones se consultan con vigencia temporal centralizada en sanction-service: estado abierto, fecha inicial y final inclusivas, y día local de America/Santiago. El endpoint `/api/sanciones/equipo/{id}/activa` evita que cada consumidor interprete las fechas de manera distinta. Sanciones futuras, vencidas o cerradas no bloquean; registros abiertos sin fechas requieren revisión y mantienen el bloqueo.
+
+Pendiente garantizar cupos y duplicados ante solicitudes concurrentes y comprobar modalidad del torneo. La pantalla real de inscripción está conectada en frontend bc55a66, pero falta probar la integración con los servicios activos. Estas pruebas no certifican todavía el flujo completo ni la entrega final.
