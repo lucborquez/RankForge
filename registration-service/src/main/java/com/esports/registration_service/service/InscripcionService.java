@@ -24,22 +24,24 @@ public class InscripcionService {
     private final TorneoClient torneoClient;
     private final SancionClient sancionClient;
     private final java.time.Clock reloj;
+    private final EquipoReglas equipoReglas;
 
     @org.springframework.beans.factory.annotation.Autowired
     public InscripcionService(InscripcionRepository inscripcionRepository,
                               TorneoClient torneoClient,
-                              SancionClient sancionClient) {
+                              SancionClient sancionClient, EquipoReglas equipoReglas) {
         this(inscripcionRepository, torneoClient, sancionClient,
-                java.time.Clock.system(java.time.ZoneId.of("America/Santiago")));
+                java.time.Clock.system(java.time.ZoneId.of("America/Santiago")), equipoReglas);
     }
 
     public InscripcionService(InscripcionRepository inscripcionRepository,
                               TorneoClient torneoClient, SancionClient sancionClient,
-                              java.time.Clock reloj) {
+                              java.time.Clock reloj, EquipoReglas equipoReglas) {
         this.inscripcionRepository = inscripcionRepository;
         this.torneoClient = torneoClient;
         this.sancionClient = sancionClient;
         this.reloj = reloj;
+        this.equipoReglas = equipoReglas;
     }
 
     // Crear inscripcion con todas las validaciones de negocio
@@ -98,6 +100,7 @@ public class InscripcionService {
         }
 
         if ("EQUIPO".equals(dto.getTipoParticipante())) {
+            equipoReglas.verificar(dto.getEquipoId(), torneo.getJuegoId());
             // Verificar inscripcion duplicada de equipo
             if (inscripcionRepository.existsByTorneoIdAndEquipoIdAndEstadoNot(
                     dto.getTorneoId(), dto.getEquipoId(), "CANCELADA")) {

@@ -14,6 +14,12 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<Map<String, String>> handleStatus(org.springframework.web.server.ResponseStatusException ex) {
+        return ResponseEntity.status(ex.getStatusCode()).body(Map.of("error",
+                ex.getReason() == null ? "Solicitud rechazada" : ex.getReason()));
+    }
+
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     // Cuando no se encuentra una inscripcion

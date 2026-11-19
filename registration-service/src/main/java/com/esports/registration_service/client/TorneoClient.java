@@ -37,6 +37,7 @@ public class TorneoClient {
     @Data
     public static class TorneoInfoDTO {
         private Long id;
+        private Long juegoId;
         private String estado;
         private Integer cupoMaximo;
         private String fechaCierreInscripcion;
