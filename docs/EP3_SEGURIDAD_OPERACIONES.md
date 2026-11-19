@@ -6,4 +6,6 @@ Cada servicio requiere `JWT_SECRET` con el mismo secreto Base64 que auth-service
 
 Los filtros se prueban sin servidores con JWT realmente firmado: solicitud anónima, jugador con cabecera falsificada, organizador válido y token expirado. Eso no demuestra por sí solo el despliegue, CORS, configuración de secretos, ni el flujo real entre servicios.
 
+Sanciones también valida exactamente un destinatario con ID positivo, motivo no vacío, severidad LEVE/MODERADA/GRAVE y fechas completas en orden. La edición no transfiere la sanción a otro participante. Sus 16 pruebas unitarias pasan: 4 de autorización, 7 de vigencia y 5 de estas reglas. La existencia real del participante sigue requiriendo validación de integración y una regla específica del servicio.
+
 Pendientes: revisar permisos locales del catálogo y los demás recursos, propiedad cuando corresponda, concurrencia y pruebas E2E. La autorización por rol no sustituye las reglas de negocio de cada operación ni garantiza que la entrega esté completa.

@@ -31,6 +31,7 @@ public class SancionService {
 
     // Crear una nueva sancion
     public SancionResponseDTO crear(SancionRequestDTO dto) {
+        validarDatos(dto);
         // Debe sancionarse a un usuario o a un equipo, no puede ser ninguno
         if (dto.getUsuarioId() == null && dto.getEquipoId() == null) {
             throw new RuntimeException("Debe indicar un usuarioId o equipoId para aplicar la sancion");
@@ -110,8 +111,14 @@ public class SancionService {
 
     // Actualizar motivo, severidad o fechas de una sancion
     public SancionResponseDTO actualizar(Long id, SancionRequestDTO dto) {
+        validarDatos(dto);
         Sancion sancion = sancionRepository.findById(id)
                 .orElseThrow(() -> new SancionNotFoundException(id));
+
+        if (!java.util.Objects.equals(sancion.getUsuarioId(), dto.getUsuarioId())
+                || !java.util.Objects.equals(sancion.getEquipoId(), dto.getEquipoId())) {
+            throw new IllegalArgumentException("No se puede cambiar el participante de una sanción");
+        }
 
         if (!sancion.getEstado()) {
             throw new RuntimeException("No se puede modificar una sancion cerrada");
@@ -165,5 +172,23 @@ public class SancionService {
         dto.setFechaFin(s.getFechaFin());
         dto.setEstado(s.getEstado());
         return dto;
+    }
+
+    private void validarDatos(SancionRequestDTO dto) {
+        if ((dto.getUsuarioId() == null) == (dto.getEquipoId() == null)
+                || (dto.getUsuarioId() != null && dto.getUsuarioId() <= 0)
+                || (dto.getEquipoId() != null && dto.getEquipoId() <= 0)) {
+            throw new IllegalArgumentException("Indica exactamente un jugador o equipo con ID válido");
+        }
+        if (dto.getMotivo() == null || dto.getMotivo().isBlank()) throw new IllegalArgumentException("El motivo es obligatorio");
+        if (dto.getSeveridad() == null || !java.util.Set.of("LEVE", "MODERADA", "GRAVE").contains(
+                dto.getSeveridad().trim().toUpperCase(java.util.Locale.ROOT))) {
+            throw new IllegalArgumentException("La severidad debe ser LEVE, MODERADA o GRAVE");
+        }
+        if (dto.getFechaInicio() == null || dto.getFechaFin() == null || dto.getFechaFin().isBefore(dto.getFechaInicio())) {
+            throw new IllegalArgumentException("Indica un intervalo de fechas válido");
+        }
+        dto.setMotivo(dto.getMotivo().trim());
+        dto.setSeveridad(dto.getSeveridad().trim().toUpperCase(java.util.Locale.ROOT));
     }
 }
