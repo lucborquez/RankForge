@@ -24,10 +24,7 @@ public class ResultadoService {
     public Resultado crearResultado(ResultadoRequestDTO dto) {
 
         // Verificar que la partida existe en match-service
-        if (!matchClient.verificarPartidaExiste(dto.getPartidaId())) {
-            throw new IllegalArgumentException(
-                    "La partida con ID " + dto.getPartidaId() + " no existe");
-        }
+        verificarMarcador(dto);
 
         // No registrar resultado duplicado para la misma partida
         if (!resultadoRepository.findByPartidaId(dto.getPartidaId()).isEmpty()) {
@@ -70,10 +67,15 @@ public class ResultadoService {
     public Resultado actualizarResultado(Long id, ResultadoRequestDTO dto) {
         Resultado existente = buscarPorId(id);
 
-        if ("VALIDADO".equalsIgnoreCase(existente.getEstadoValidacion())) {
+        if (!"PENDIENTE".equalsIgnoreCase(existente.getEstadoValidacion())) {
             throw new IllegalStateException(
                     "Un resultado con validación completa no puede ser alterado.");
         }
+
+        if (!java.util.Objects.equals(existente.getPartidaId(), dto.getPartidaId())) {
+            throw new IllegalArgumentException("No se puede cambiar la partida del resultado");
+        }
+        verificarMarcador(dto);
 
         existente.setGanadorId(dto.getGanadorId());
         existente.setPuntajeA(dto.getPuntajeA());
@@ -94,6 +96,9 @@ public class ResultadoService {
                     "Solo se pueden validar resultados en estado PENDIENTE.");
         }
 
+        verificarMarcador(new ResultadoRequestDTO(existente.getPartidaId(), existente.getGanadorId(),
+                existente.getPuntajeA(), existente.getPuntajeB(), existente.getEvidenciaUrl()));
+
         existente.setEstadoValidacion("VALIDADO");
         Resultado validado = resultadoRepository.save(existente);
         log.info("Resultado validado ID: {}", validado.getId());
@@ -102,6 +107,9 @@ public class ResultadoService {
 
     // Anular resultado con justificación
     public Resultado anularResultado(Long id, String justificacion) {
+        if (justificacion == null || justificacion.isBlank()) {
+            throw new IllegalArgumentException("La anulación requiere una justificación");
+        }
         Resultado existente = buscarPorId(id);
 
         if ("ANULADO".equalsIgnoreCase(existente.getEstadoValidacion())) {
@@ -115,5 +123,22 @@ public class ResultadoService {
         Resultado anulado = resultadoRepository.save(existente);
         log.info("Resultado anulado ID: {} — justificacion: {}", id, justificacion);
         return anulado;
+    }
+
+    private void verificarMarcador(ResultadoRequestDTO dto) {
+        if (dto.getPartidaId() == null || dto.getPartidaId() <= 0 || dto.getPuntajeA() == null
+                || dto.getPuntajeB() == null || dto.getPuntajeA() < 0 || dto.getPuntajeB() < 0) {
+            throw new IllegalArgumentException("Partida o puntajes inválidos");
+        }
+        var partida = matchClient.obtener(dto.getPartidaId());
+        if ("CANCELADA".equals(partida.estado()) || partida.participanteAId() == null
+                || partida.participanteBId() == null || partida.participanteAId().equals(partida.participanteBId())) {
+            throw new IllegalArgumentException("La partida no admite resultados");
+        }
+        Long ganador = dto.getPuntajeA().equals(dto.getPuntajeB()) ? null
+                : dto.getPuntajeA() > dto.getPuntajeB() ? partida.participanteAId() : partida.participanteBId();
+        if (!java.util.Objects.equals(ganador, dto.getGanadorId())) {
+            throw new IllegalArgumentException("El ganador no corresponde al marcador y participantes");
+        }
     }
 }

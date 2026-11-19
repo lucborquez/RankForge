@@ -17,7 +17,20 @@ public class MatchClient {
     private final RestTemplate restTemplate;
 
     public MatchClient() {
-        this.restTemplate = new RestTemplate();
+        var factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(3000); factory.setReadTimeout(5000);
+        this.restTemplate = new RestTemplate(factory);
+    }
+
+    public record Partida(Long id, Long torneoId, Long participanteAId, Long participanteBId, String estado) {}
+    public Partida obtener(Long partidaId) {
+        try {
+            Partida partida = restTemplate.getForObject(matchServiceUrl + "/api/partidas/" + partidaId, Partida.class);
+            if (partida == null) throw new IllegalStateException("Partida no disponible");
+            return partida;
+        } catch (org.springframework.web.client.RestClientException ex) {
+            throw new IllegalStateException("No se pudo verificar la partida", ex);
+        }
     }
 
     //metodo que usa ResultadoService para verificar si la partida existe
