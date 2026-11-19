@@ -15,6 +15,8 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Long> 
     // Para verificar si ya está inscrito en el mismo torneo
     boolean existsByTorneoIdAndJugadorId(Long torneoId, Long jugadorId);
     boolean existsByTorneoIdAndEquipoId(Long torneoId, Long equipoId);
+    boolean existsByTorneoIdAndJugadorIdAndEstadoNot(Long torneoId, Long jugadorId, String estado);
+    boolean existsByTorneoIdAndEquipoIdAndEstadoNot(Long torneoId, Long equipoId, String estado);
 
     // Para contar cuántos hay inscritos en un torneo
     long countByTorneoIdAndEstadoNot(Long torneoId, String estado);

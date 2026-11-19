@@ -23,17 +23,35 @@ public class InscripcionService {
     private final InscripcionRepository inscripcionRepository;
     private final TorneoClient torneoClient;
     private final SancionClient sancionClient;
+    private final java.time.Clock reloj;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public InscripcionService(InscripcionRepository inscripcionRepository,
                               TorneoClient torneoClient,
                               SancionClient sancionClient) {
+        this(inscripcionRepository, torneoClient, sancionClient,
+                java.time.Clock.system(java.time.ZoneId.of("America/Santiago")));
+    }
+
+    public InscripcionService(InscripcionRepository inscripcionRepository,
+                              TorneoClient torneoClient, SancionClient sancionClient,
+                              java.time.Clock reloj) {
         this.inscripcionRepository = inscripcionRepository;
         this.torneoClient = torneoClient;
         this.sancionClient = sancionClient;
+        this.reloj = reloj;
     }
 
     // Crear inscripcion con todas las validaciones de negocio
     public InscripcionResponseDTO crear(InscripcionRequestDTO dto) {
+
+        if (dto.getTorneoId() == null || dto.getTorneoId() <= 0
+                || !("EQUIPO".equals(dto.getTipoParticipante()) || "JUGADOR".equals(dto.getTipoParticipante()))
+                || (dto.getEquipoId() != null && dto.getJugadorId() != null)
+                || (dto.getEquipoId() != null && dto.getEquipoId() <= 0)
+                || (dto.getJugadorId() != null && dto.getJugadorId() <= 0)) {
+            throw new IllegalArgumentException("Identificadores o tipo de participante inválidos");
+        }
 
         // Validar que venga equipoId o jugadorId según el tipo
         if ("EQUIPO".equals(dto.getTipoParticipante()) && dto.getEquipoId() == null) {
@@ -54,6 +72,11 @@ public class InscripcionService {
             throw new RuntimeException("El torneo no está abierto para inscripciones");
         }
 
+        PlazoInscripcion.verificar(torneo.getFechaCierreInscripcion(), reloj);
+        if (torneo.getCupoMaximo() == null || torneo.getCupoMaximo() <= 0) {
+            throw new IllegalArgumentException("El torneo no tiene un cupo válido");
+        }
+
         // Verificar que no se haya superado el cupo
         long inscritos = inscripcionRepository
                 .countByTorneoIdAndEstadoNot(dto.getTorneoId(), "CANCELADA");
@@ -68,16 +91,16 @@ public class InscripcionService {
                         "El jugador tiene una sanción activa y no puede inscribirse");
             }
             // Verificar inscripcion duplicada
-            if (inscripcionRepository.existsByTorneoIdAndJugadorId(
-                    dto.getTorneoId(), dto.getJugadorId())) {
+            if (inscripcionRepository.existsByTorneoIdAndJugadorIdAndEstadoNot(
+                    dto.getTorneoId(), dto.getJugadorId(), "CANCELADA")) {
                 throw new RuntimeException("El jugador ya está inscrito en este torneo");
             }
         }
 
         if ("EQUIPO".equals(dto.getTipoParticipante())) {
             // Verificar inscripcion duplicada de equipo
-            if (inscripcionRepository.existsByTorneoIdAndEquipoId(
-                    dto.getTorneoId(), dto.getEquipoId())) {
+            if (inscripcionRepository.existsByTorneoIdAndEquipoIdAndEstadoNot(
+                    dto.getTorneoId(), dto.getEquipoId(), "CANCELADA")) {
                 throw new RuntimeException("El equipo ya está inscrito en este torneo");
             }
         }
@@ -89,7 +112,7 @@ public class InscripcionService {
         inscripcion.setJugadorId(dto.getJugadorId());
         inscripcion.setTipoParticipante(dto.getTipoParticipante());
         inscripcion.setEstado("PENDIENTE");
-        inscripcion.setFechaInscripcion(LocalDate.now());
+        inscripcion.setFechaInscripcion(LocalDate.now(reloj));
 
         Inscripcion guardada = inscripcionRepository.save(inscripcion);
         log.info("Inscripcion creada ID: {} para torneoId: {}",
@@ -129,6 +152,10 @@ public class InscripcionService {
 
     // Actualizar estado
     public InscripcionResponseDTO actualizarEstado(Long id, String nuevoEstado) {
+        if (!java.util.Set.of("PENDIENTE", "APROBADA", "CANCELADA").contains(
+                nuevoEstado == null ? "" : nuevoEstado)) {
+            throw new IllegalArgumentException("Estado de inscripción inválido");
+        }
         Inscripcion i = inscripcionRepository.findById(id)
                 .orElseThrow(() -> new InscripcionNotFoundException(id));
 
