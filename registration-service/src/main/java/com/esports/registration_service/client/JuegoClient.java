@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 @Component
 public class JuegoClient {
     @Value("${game.service.url:http://localhost:8081}") private String url;
-    private final RestTemplate http = new RestTemplate();
+    private final RestTemplate http = ClientesHttp.crear();
     public record Juego(Long id, Integer jugadoresPorEquipo, Boolean estado) {}
     public Juego obtener(Long id) {
         try {

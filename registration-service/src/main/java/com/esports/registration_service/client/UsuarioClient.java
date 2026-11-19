@@ -18,7 +18,7 @@ public class UsuarioClient {
     private final RestTemplate restTemplate;
 
     public UsuarioClient() {
-        this.restTemplate = new RestTemplate();
+        this.restTemplate = ClientesHttp.crear();
     }
 
     public record Actor(Long id, String rol, Boolean estado) {

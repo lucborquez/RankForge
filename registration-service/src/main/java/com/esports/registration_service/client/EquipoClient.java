@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 @Component
 public class EquipoClient {
     @Value("${team.service.url}") private String url;
-    private final RestTemplate http = new RestTemplate();
+    private final RestTemplate http = ClientesHttp.crear();
     public record Miembro(Long id, Long usuarioId, String rolDentroEquipo) {}
     public record Equipo(Long id, Long capitanId, Boolean estado, Long juegoPrincipalId, java.util.List<Miembro> miembros) {
         public Equipo(Long id, Long capitanId, Boolean estado) { this(id, capitanId, estado, null, null); }

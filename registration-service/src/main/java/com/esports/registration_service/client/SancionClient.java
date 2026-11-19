@@ -17,7 +17,7 @@ public class SancionClient {
     private final RestTemplate restTemplate;
 
     public SancionClient() {
-        this.restTemplate = new RestTemplate();
+        this.restTemplate = ClientesHttp.crear();
     }
 
     public SancionClient(RestTemplate restTemplate, String sanctionServiceUrl) {

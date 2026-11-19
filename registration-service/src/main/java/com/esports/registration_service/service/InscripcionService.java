@@ -25,26 +25,31 @@ public class InscripcionService {
     private final SancionClient sancionClient;
     private final java.time.Clock reloj;
     private final EquipoReglas equipoReglas;
+    private final com.esports.registration_service.repository.CupoTorneoRepository cupos;
 
     @org.springframework.beans.factory.annotation.Autowired
     public InscripcionService(InscripcionRepository inscripcionRepository,
                               TorneoClient torneoClient,
-                              SancionClient sancionClient, EquipoReglas equipoReglas) {
+                              SancionClient sancionClient, EquipoReglas equipoReglas,
+                              com.esports.registration_service.repository.CupoTorneoRepository cupos) {
         this(inscripcionRepository, torneoClient, sancionClient,
-                java.time.Clock.system(java.time.ZoneId.of("America/Santiago")), equipoReglas);
+                java.time.Clock.system(java.time.ZoneId.of("America/Santiago")), equipoReglas, cupos);
     }
 
     public InscripcionService(InscripcionRepository inscripcionRepository,
                               TorneoClient torneoClient, SancionClient sancionClient,
-                              java.time.Clock reloj, EquipoReglas equipoReglas) {
+                              java.time.Clock reloj, EquipoReglas equipoReglas,
+                              com.esports.registration_service.repository.CupoTorneoRepository cupos) {
         this.inscripcionRepository = inscripcionRepository;
         this.torneoClient = torneoClient;
         this.sancionClient = sancionClient;
         this.reloj = reloj;
         this.equipoReglas = equipoReglas;
+        this.cupos = cupos;
     }
 
     // Crear inscripcion con todas las validaciones de negocio
+    @org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public InscripcionResponseDTO crear(InscripcionRequestDTO dto) {
 
         if (dto.getTorneoId() == null || dto.getTorneoId() <= 0
@@ -79,6 +84,9 @@ public class InscripcionService {
             throw new IllegalArgumentException("El torneo no tiene un cupo válido");
         }
 
+        // Serializar conteo, comprobación de duplicados y alta en una misma transacción.
+        // La fila existe incluso cuando todavía no hay inscripciones en el torneo.
+        cupos.bloquear(dto.getTorneoId());
         // Verificar que no se haya superado el cupo
         long inscritos = inscripcionRepository
                 .countByTorneoIdAndEstadoNot(dto.getTorneoId(), "CANCELADA");

@@ -12,4 +12,8 @@ Para equipos se verifica estado activo, juego compatible, cantidad exacta de int
 
 Las sanciones se consultan con vigencia temporal centralizada en sanction-service: estado abierto, fecha inicial y final inclusivas, y día local de America/Santiago. El endpoint `/api/sanciones/equipo/{id}/activa` evita que cada consumidor interprete las fechas de manera distinta. Sanciones futuras, vencidas o cerradas no bloquean; registros abiertos sin fechas requieren revisión y mantienen el bloqueo.
 
-Pendiente garantizar cupos y duplicados ante solicitudes concurrentes y comprobar modalidad del torneo. La pantalla real de inscripción está conectada en frontend bc55a66, pero falta probar la integración con los servicios activos. Estas pruebas no certifican todavía el flujo completo ni la entrega final.
+La creación incorpora una transacción READ_COMMITTED y una fila de bloqueo por torneo en `inscripcion_cupos`. El upsert MySQL/InnoDB bloquea esa fila hasta finalizar la transacción; el conteo, la comprobación de duplicados y el alta quedan dentro de ella. Los clientes remotos tienen límites de conexión de 3 segundos y lectura de 5 segundos para evitar esperas indefinidas durante la operación.
+
+Esta protección de concurrencia está implementada pero todavía requiere prueba de solicitudes simultáneas contra MySQL: las pruebas unitarias simulan el repositorio de bloqueos. En la comprobación del 19/11, MySQL local no aceptó conexión en 127.0.0.1:3306. No se afirma haber verificado el bloqueo real ni la coordinación con modificaciones del torneo en otro microservicio.
+
+Pendiente comprobar modalidad del torneo. La pantalla real de inscripción está conectada en frontend bc55a66, pero falta probar la integración con los servicios activos. Estas pruebas no certifican todavía el flujo completo ni la entrega final.

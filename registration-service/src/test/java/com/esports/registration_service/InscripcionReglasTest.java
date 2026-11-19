@@ -17,7 +17,8 @@ class InscripcionReglasTest {
     SancionClient sanciones = mock(SancionClient.class);
     InscripcionService service = new InscripcionService(repository, torneos, sanciones,
         Clock.fixed(Instant.parse("2026-11-18T15:00:00Z"), ZoneId.of("America/Santiago")),
-        mock(com.esports.registration_service.service.EquipoReglas.class));
+        mock(com.esports.registration_service.service.EquipoReglas.class),
+        mock(com.esports.registration_service.repository.CupoTorneoRepository.class));
     InscripcionRequestDTO request;
     TorneoClient.TorneoInfoDTO torneo;
 

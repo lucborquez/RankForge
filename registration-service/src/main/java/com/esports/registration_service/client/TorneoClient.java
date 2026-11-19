@@ -18,7 +18,7 @@ public class TorneoClient {
     private final RestTemplate restTemplate;
 
     public TorneoClient() {
-        this.restTemplate = new RestTemplate();
+        this.restTemplate = ClientesHttp.crear();
     }
 
     // Verifica si el torneo existe y está abierto, y retorna su cupo máximo
