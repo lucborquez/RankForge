@@ -9,6 +9,9 @@ import java.util.Optional;
 
 @Repository
 public interface RankingRepository extends JpaRepository<Ranking, Long> {
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("delete from Ranking r where r.torneoId = :torneoId")
+    void borrarPorTorneo(@org.springframework.data.repository.query.Param("torneoId") Long torneoId);
 
     // Obtener ranking de un torneo ordenado por puntos descendente
     List<Ranking> findByTorneoIdOrderByPuntosDesc(Long torneoId);
