@@ -12,7 +12,8 @@ import static org.mockito.Mockito.*;
 class ResultadoReglasTest {
     ResultadoRepository repository = mock(ResultadoRepository.class);
     MatchClient partidas = mock(MatchClient.class);
-    ResultadoService service = new ResultadoService(repository, partidas);
+    ResultadoService service = new ResultadoService(repository, partidas,
+        mock(com.esports.resultservice.repository.ResultadoPartidaLockRepository.class));
     ResultadoRequestDTO dto = new ResultadoRequestDTO(3L, 7L, 2, 1, null);
     void partida() { when(partidas.obtener(3L)).thenReturn(new MatchClient.Partida(3L, 1L, 7L, 8L, "PROGRAMADA")); }
     @Test void aceptaGanadorCoherente() {
@@ -29,7 +30,7 @@ class ResultadoReglasTest {
     }
     @Test void resultadoValidadoNoSeEdita() {
         Resultado r = new Resultado(); r.setEstadoValidacion("VALIDADO");
-        when(repository.findById(4L)).thenReturn(Optional.of(r));
+        when(repository.buscarParaModificar(4L)).thenReturn(Optional.of(r));
         assertThrows(IllegalStateException.class, () -> service.actualizarResultado(4L, dto)); verify(repository, never()).save(any());
     }
     @Test void anulacionRequiereMotivo() {
@@ -39,7 +40,7 @@ class ResultadoReglasTest {
         partida();
         Resultado r = new Resultado(); r.setPartidaId(3L); r.setEstadoValidacion("PENDIENTE");
         r.setPuntajeA(2); r.setPuntajeB(1); r.setGanadorId(8L);
-        when(repository.findById(4L)).thenReturn(Optional.of(r));
+        when(repository.buscarParaModificar(4L)).thenReturn(Optional.of(r));
         assertThrows(IllegalArgumentException.class, () -> service.validarResultado(4L));
         assertEquals("PENDIENTE", r.getEstadoValidacion()); verify(repository, never()).save(any());
     }
@@ -47,8 +48,20 @@ class ResultadoReglasTest {
         when(partidas.obtener(3L)).thenReturn(new MatchClient.Partida(3L, 1L, 7L, 8L, "CANCELADA"));
         Resultado r = new Resultado(); r.setPartidaId(3L); r.setEstadoValidacion("PENDIENTE");
         r.setPuntajeA(2); r.setPuntajeB(1); r.setGanadorId(7L);
-        when(repository.findById(4L)).thenReturn(Optional.of(r));
+        when(repository.buscarParaModificar(4L)).thenReturn(Optional.of(r));
         assertThrows(IllegalArgumentException.class, () -> service.validarResultado(4L));
+        verify(repository, never()).save(any());
+    }
+    @Test void validacionRepetidaNoVuelveAGuardar() {
+        Resultado r = new Resultado(); r.setEstadoValidacion("VALIDADO");
+        when(repository.buscarParaModificar(4L)).thenReturn(Optional.of(r));
+        assertSame(r, service.validarResultado(4L));
+        verify(repository, never()).save(any()); verifyNoInteractions(partidas);
+    }
+    @Test void anulacionRepetidaConservaMotivoOriginal() {
+        Resultado r = new Resultado(); r.setEstadoValidacion("ANULADO"); r.setJustificacionAnulacion("Original");
+        when(repository.buscarParaModificar(4L)).thenReturn(Optional.of(r));
+        assertEquals("Original", service.anularResultado(4L, "Otro motivo").getJustificacionAnulacion());
         verify(repository, never()).save(any());
     }
 }

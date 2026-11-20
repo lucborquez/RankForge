@@ -19,12 +19,15 @@ public class ResultadoService {
 
     private final ResultadoRepository resultadoRepository;
     private final MatchClient matchClient;
+    private final com.esports.resultservice.repository.ResultadoPartidaLockRepository bloqueos;
 
     // Crear resultado validando que la partida exista y no haya duplicado
+    @org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public Resultado crearResultado(ResultadoRequestDTO dto) {
 
         // Verificar que la partida existe en match-service
         verificarMarcador(dto);
+        bloqueos.bloquear(dto.getPartidaId());
 
         // No registrar resultado duplicado para la misma partida
         if (!resultadoRepository.findByPartidaId(dto.getPartidaId()).isEmpty()) {
@@ -64,8 +67,9 @@ public class ResultadoService {
     }
 
     // Actualizar resultado (solo si no está validado)
+    @org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public Resultado actualizarResultado(Long id, ResultadoRequestDTO dto) {
-        Resultado existente = buscarPorId(id);
+        Resultado existente = buscarParaModificar(id);
 
         if (!"PENDIENTE".equalsIgnoreCase(existente.getEstadoValidacion())) {
             throw new IllegalStateException(
@@ -88,8 +92,10 @@ public class ResultadoService {
     }
 
     // Validar resultado (solo organizador puede hacerlo)
+    @org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public Resultado validarResultado(Long id) {
-        Resultado existente = buscarPorId(id);
+        Resultado existente = buscarParaModificar(id);
+        if ("VALIDADO".equals(existente.getEstadoValidacion())) return existente;
 
         if (!"PENDIENTE".equalsIgnoreCase(existente.getEstadoValidacion())) {
             throw new IllegalStateException(
@@ -106,15 +112,15 @@ public class ResultadoService {
     }
 
     // Anular resultado con justificación
+    @org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public Resultado anularResultado(Long id, String justificacion) {
         if (justificacion == null || justificacion.isBlank()) {
             throw new IllegalArgumentException("La anulación requiere una justificación");
         }
-        Resultado existente = buscarPorId(id);
+        Resultado existente = buscarParaModificar(id);
 
         if ("ANULADO".equalsIgnoreCase(existente.getEstadoValidacion())) {
-            throw new IllegalStateException(
-                    "El resultado ya está anulado.");
+            return existente;
         }
 
         existente.setEstadoValidacion("ANULADO");
@@ -140,5 +146,10 @@ public class ResultadoService {
         if (!java.util.Objects.equals(ganador, dto.getGanadorId())) {
             throw new IllegalArgumentException("El ganador no corresponde al marcador y participantes");
         }
+    }
+
+    private Resultado buscarParaModificar(Long id) {
+        return resultadoRepository.buscarParaModificar(id).orElseThrow(() ->
+                new IllegalArgumentException("Resultado no encontrado con ID: " + id));
     }
 }
