@@ -16,6 +16,7 @@ import java.util.List;
 public class ResultadoController {
 
     private final ResultadoService resultadoService;
+    private final com.esports.resultservice.service.ResultadoRankingService resultadoRankingService;
 
     // POST http://localhost:8083/api/resultados (Para crear un resultado)
     @PostMapping
@@ -43,13 +44,14 @@ public class ResultadoController {
 
     // PATCH http://localhost:8083/api/resultados/{id}/anular?justificacion=... (Anular)
     @PatchMapping("/{id}/anular")
-    public ResponseEntity<Resultado> anular(@PathVariable Long id, @RequestParam String justificacion) {
-        return ResponseEntity.ok(resultadoService.anularResultado(id, justificacion));
+    public ResponseEntity<Resultado> anular(@PathVariable Long id, @RequestParam String justificacion,
+            @RequestHeader("Authorization") String authorization) {
+        return ResponseEntity.ok(resultadoRankingService.anular(id, justificacion, authorization));
     }
 
     // PATCH http://localhost:8088/api/resultados/{id}/validar
     @PatchMapping("/{id}/validar")
-    public ResponseEntity<Resultado> validar(@PathVariable Long id) {
-        return ResponseEntity.ok(resultadoService.validarResultado(id));
+    public ResponseEntity<Resultado> validar(@PathVariable Long id, @RequestHeader("Authorization") String authorization) {
+        return ResponseEntity.ok(resultadoRankingService.validar(id, authorization));
     }
 }

@@ -8,4 +8,8 @@ Reglamento base implementado: victoria 3 puntos, empate 1, derrota 0. Orden: pun
 
 Verificación: 11 pruebas unitarias aprobadas entre cálculo, reconstrucción y autorización. Los repositorios y fuentes son simulados; falta comprobar el bloqueo y rollback con MySQL real. Las modificaciones manuales del CRUD anterior todavía no comparten este bloqueo.
 
-Pendiente conectar la validación/anulación de result-service a este endpoint con Authorization, gestionar reintentos y probar el flujo integrado. La existencia de este endpoint todavía no acredita actualización automática al validar resultados.
+La validación y anulación de result-service llaman ahora a este endpoint después de guardar el cambio, reenviando Authorization. Configurar `ranking.service.url` (por defecto localhost:8089). La operación exterior no mantiene una transacción abierta mientras ranking vuelve a consultar los resultados.
+
+Si falla la sincronización, result-service responde 503 indicando que el resultado ya quedó guardado. Repetir PATCH validar sobre VALIDADO, o PATCH anular sobre ANULADO con justificación no vacía, vuelve a sincronizar sin modificar nuevamente el resultado ni su justificación. El resultado no se revierte por una caída de otro servicio. No hay entrega automática diferida: una caída requiere reintentar o invocar la reconstrucción autorizada.
+
+Result-service pasa 15 pruebas unitarias, incluidas cuatro de orden de llamadas, reenvío de autorización, fallo/reintento y anulación. Falta comprobar el flujo HTTP y persistencia reales, concurrencia entre edición y validación, y recuperación desde la interfaz después de recargar la página. No se afirma que la integración desplegada esté verificada.
