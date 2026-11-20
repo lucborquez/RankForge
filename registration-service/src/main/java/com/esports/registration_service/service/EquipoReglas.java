@@ -13,6 +13,18 @@ public class EquipoReglas {
     public EquipoReglas(EquipoClient equipos, JuegoClient juegos, SancionClient sanciones, UsuarioClient usuarios) {
         this.equipos = equipos; this.juegos = juegos; this.sanciones = sanciones; this.usuarios = usuarios;
     }
+    public void verificarTipo(String tipoParticipante, Long juegoId) {
+        if (juegoId == null || juegoId <= 0) throw new IllegalArgumentException("El torneo no tiene un juego válido");
+        var juego = juegos.obtener(juegoId);
+        if (!Boolean.TRUE.equals(juego.estado()) || juego.jugadoresPorEquipo() == null || juego.jugadoresPorEquipo() <= 0) {
+            throw new IllegalArgumentException("El juego no tiene una configuración válida");
+        }
+        String esperado = juego.jugadoresPorEquipo() == 1 ? "JUGADOR" : "EQUIPO";
+        if (!esperado.equals(tipoParticipante)) {
+            throw new IllegalArgumentException(esperado.equals("EQUIPO")
+                    ? "Este juego requiere inscripción por equipo" : "Este juego requiere inscripción individual");
+        }
+    }
     public void verificar(Long equipoId, Long juegoId) {
         var equipo = equipos.obtener(equipoId);
         if (!Boolean.TRUE.equals(equipo.estado())) throw new IllegalArgumentException("El equipo está inactivo");

@@ -8,7 +8,7 @@ Para equipos se verifica estado activo, juego compatible, cantidad exacta de int
 
 ## Verificación y límites
 
-28 pruebas unitarias aprobadas en registration-service: plazo (5), reglas de inscripción (6), autorización (5), reglas de equipo (7) y cliente de sanciones (5). En sanction-service pasan otras 7 pruebas de vigencia temporal. Los servicios remotos se simulan: falta validación E2E con MySQL y servicios activos.
+32 pruebas unitarias aprobadas en registration-service: plazo (5), reglas de inscripción (6), autorización (5), reglas de equipo y tipo de participación (11) y cliente de sanciones (5). En sanction-service pasan otras 7 pruebas de vigencia temporal. Los servicios remotos se simulan: falta validación E2E con MySQL y servicios activos.
 
 Las sanciones se consultan con vigencia temporal centralizada en sanction-service: estado abierto, fecha inicial y final inclusivas, y día local de America/Santiago. El endpoint `/api/sanciones/equipo/{id}/activa` evita que cada consumidor interprete las fechas de manera distinta. Sanciones futuras, vencidas o cerradas no bloquean; registros abiertos sin fechas requieren revisión y mantienen el bloqueo.
 
@@ -16,4 +16,4 @@ La creación incorpora una transacción READ_COMMITTED y una fila de bloqueo por
 
 Esta protección de concurrencia está implementada pero todavía requiere prueba de solicitudes simultáneas contra MySQL: las pruebas unitarias simulan el repositorio de bloqueos. En la comprobación del 19/11, MySQL local no aceptó conexión en 127.0.0.1:3306. No se afirma haber verificado el bloqueo real ni la coordinación con modificaciones del torneo en otro microservicio.
 
-Pendiente comprobar modalidad del torneo. La pantalla real de inscripción está conectada en frontend bc55a66, pero falta probar la integración con los servicios activos. Estas pruebas no certifican todavía el flujo completo ni la entrega final.
+El tipo de inscripción se determina por jugadoresPorEquipo del juego activo: 1 exige JUGADOR y más de 1 exige EQUIPO. No se interpreta el texto libre de modalidad del torneo (por ejemplo 5v5 o Battle Royale) como un enum de tipo de participante. La pantalla real de inscripción está conectada en frontend bc55a66, pero falta probar la integración con los servicios activos. Estas pruebas no certifican todavía el flujo completo ni la entrega final.

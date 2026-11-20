@@ -25,6 +25,23 @@ class EquipoReglasTest {
         verify(sanciones).tieneSancionActiva(7L); verify(sanciones).tieneSancionActiva(8L);
         verify(sanciones).equipoSancionado(1L);
     }
+    @Test void juegoDeEquipoNoAdmiteInscripcionIndividual() {
+        assertThrows(IllegalArgumentException.class, () -> reglas.verificarTipo("JUGADOR", 3L));
+        assertDoesNotThrow(() -> reglas.verificarTipo("EQUIPO", 3L));
+    }
+    @Test void juegoIndividualNoAdmiteEquipo() {
+        when(juegos.obtener(3L)).thenReturn(new JuegoClient.Juego(3L, 1, true));
+        assertThrows(IllegalArgumentException.class, () -> reglas.verificarTipo("EQUIPO", 3L));
+        assertDoesNotThrow(() -> reglas.verificarTipo("JUGADOR", 3L));
+    }
+    @Test void juegoInactivoNoAdmiteInscripciones() {
+        when(juegos.obtener(3L)).thenReturn(new JuegoClient.Juego(3L, 1, false));
+        assertThrows(IllegalArgumentException.class, () -> reglas.verificarTipo("JUGADOR", 3L));
+    }
+    @Test void torneoSinJuegoNoConsultaRed() {
+        assertThrows(IllegalArgumentException.class, () -> reglas.verificarTipo("JUGADOR", null));
+        verify(juegos, never()).obtener(any());
+    }
     @Test void rechazaEquipoInactivo() {
         when(equipos.obtener(1L)).thenReturn(new EquipoClient.Equipo(1L, 7L, false, 3L, miembros));
         assertThrows(IllegalArgumentException.class, () -> reglas.verificar(1L, 3L));

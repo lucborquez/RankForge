@@ -80,6 +80,7 @@ public class InscripcionService {
         }
 
         PlazoInscripcion.verificar(torneo.getFechaCierreInscripcion(), reloj);
+        equipoReglas.verificarTipo(dto.getTipoParticipante(), torneo.getJuegoId());
         if (torneo.getCupoMaximo() == null || torneo.getCupoMaximo() <= 0) {
             throw new IllegalArgumentException("El torneo no tiene un cupo válido");
         }
