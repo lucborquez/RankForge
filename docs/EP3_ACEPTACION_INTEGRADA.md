@@ -29,7 +29,7 @@ Registrar en cada ejecución: fecha, commits de frontend/backend, rol, solicitud
 
 ## Revisiones de consistencia todavía abiertas
 
-La validación de duplicados de partidas aún necesita exclusión concurrente. Las correcciones de resultados después del cierre deben coordinarse con premios y clasificación. Los endpoints manuales de ranking deben revisarse para evitar que contradigan la reconstrucción automática. No marcar estas condiciones como aprobadas sólo porque pasen los casos unitarios.
+La validación de duplicados de partidas aún necesita exclusión concurrente. Las correcciones de resultados después del cierre deben coordinarse con premios y clasificación. Los endpoints manuales de escritura de ranking ya se rechazan con 409 para preservar la clasificación derivada; comprobar también ese rechazo en la ejecución integrada. No marcar estas condiciones como aprobadas sólo porque pasen los casos unitarios.
 
 ## Evidencia disponible
 

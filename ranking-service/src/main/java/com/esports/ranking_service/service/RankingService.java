@@ -22,26 +22,11 @@ public class RankingService {
         this.rankingRepository = rankingRepository;
     }
 
-    // Crear registro de ranking para un participante en un torneo
+    // Endpoint heredado: las filas se crean sólo al reconstruir resultados.
     public RankingResponseDTO crear(RankingRequestDTO dto) {
-        // Validar que no exista ya un ranking para ese participante en ese torneo
-        if (rankingRepository.existsByTorneoIdAndParticipanteId(dto.getTorneoId(), dto.getParticipanteId())) {
-            throw new RuntimeException("Ya existe un ranking para el participante "
-                    + dto.getParticipanteId() + " en el torneo " + dto.getTorneoId());
-        }
-
-        Ranking ranking = new Ranking();
-        ranking.setTorneoId(dto.getTorneoId());
-        ranking.setParticipanteId(dto.getParticipanteId());
-        ranking.setPuntos(dto.getPuntos() != null ? dto.getPuntos() : 0);
-        ranking.setVictorias(dto.getVictorias() != null ? dto.getVictorias() : 0);
-        ranking.setDerrotas(dto.getDerrotas() != null ? dto.getDerrotas() : 0);
-        ranking.setDiferencia(dto.getDiferencia() != null ? dto.getDiferencia() : 0);
-        ranking.setPosicion(dto.getPosicion() != null ? dto.getPosicion() : 0);
-
-        Ranking guardado = rankingRepository.save(ranking);
-        log.info("Ranking creado para participanteId: {} en torneoId: {}", guardado.getParticipanteId(), guardado.getTorneoId());
-        return convertirAResponse(guardado);
+        throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.CONFLICT,
+                "La clasificación se deriva de resultados validados. Corrige el resultado y usa /api/rankings/torneo/{torneoId}/recalcular");
     }
 
     // Listar todos los rankings
@@ -83,44 +68,25 @@ public class RankingService {
                 .collect(Collectors.toList());
     }
 
-    // Actualizar estadisticas de un ranking (puntos, victorias, derrotas, diferencia, posicion)
+    // Las correcciones se realizan sobre resultados, no sobre estadísticas derivadas.
     public RankingResponseDTO actualizar(Long id, RankingRequestDTO dto) {
-        Ranking ranking = rankingRepository.findById(id)
-                .orElseThrow(() -> new RankingNotFoundException(id));
-
-        ranking.setPuntos(dto.getPuntos() != null ? dto.getPuntos() : ranking.getPuntos());
-        ranking.setVictorias(dto.getVictorias() != null ? dto.getVictorias() : ranking.getVictorias());
-        ranking.setDerrotas(dto.getDerrotas() != null ? dto.getDerrotas() : ranking.getDerrotas());
-        ranking.setDiferencia(dto.getDiferencia() != null ? dto.getDiferencia() : ranking.getDiferencia());
-        ranking.setPosicion(dto.getPosicion() != null ? dto.getPosicion() : ranking.getPosicion());
-
-        Ranking actualizado = rankingRepository.save(ranking);
-        log.info("Ranking actualizado: ID {}", actualizado.getId());
-        return convertirAResponse(actualizado);
+        throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.CONFLICT,
+                "La clasificación se deriva de resultados validados. Corrige el resultado y usa /api/rankings/torneo/{torneoId}/recalcular");
     }
 
-    // Reiniciar estadisticas de un ranking a cero
+    // No borrar estadísticas sin modificar su resultado de origen.
     public RankingResponseDTO reiniciar(Long id) {
-        Ranking ranking = rankingRepository.findById(id)
-                .orElseThrow(() -> new RankingNotFoundException(id));
-
-        ranking.setPuntos(0);
-        ranking.setVictorias(0);
-        ranking.setDerrotas(0);
-        ranking.setDiferencia(0);
-        ranking.setPosicion(0);
-
-        Ranking reiniciado = rankingRepository.save(ranking);
-        log.info("Ranking reiniciado: ID {}", reiniciado.getId());
-        return convertirAResponse(reiniciado);
+        throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.CONFLICT,
+                "La clasificación se deriva de resultados validados. Corrige el resultado y usa /api/rankings/torneo/{torneoId}/recalcular");
     }
 
-    // Eliminar ranking
+    // Mantener la coherencia del torneo completo.
     public void eliminar(Long id) {
-        Ranking ranking = rankingRepository.findById(id)
-                .orElseThrow(() -> new RankingNotFoundException(id));
-        rankingRepository.delete(ranking);
-        log.info("Ranking eliminado: ID {}", id);
+        throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.CONFLICT,
+                "La clasificación se deriva de resultados validados. Corrige el resultado y usa /api/rankings/torneo/{torneoId}/recalcular");
     }
 
     private RankingResponseDTO convertirAResponse(Ranking r) {
