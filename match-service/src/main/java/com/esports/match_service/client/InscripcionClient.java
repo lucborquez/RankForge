@@ -20,8 +20,12 @@ public class InscripcionClient {
     private final RestTemplate restTemplate;
 
     public InscripcionClient() {
-        this.restTemplate = new RestTemplate();
+        var factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(3000); factory.setReadTimeout(5000);
+        this.restTemplate = new RestTemplate(factory);
     }
+
+    public InscripcionClient(RestTemplate restTemplate) { this.restTemplate = restTemplate; }
 
     // Verifica si un participante está inscrito en el torneo
     public boolean participanteInscrito(Long torneoId, Long participanteId) {
@@ -30,14 +34,14 @@ public class InscripcionClient {
                     + "/api/inscripciones/torneo/" + torneoId;
             InscripcionDTO[] inscripciones = restTemplate
                     .getForObject(url, InscripcionDTO[].class);
-            if (inscripciones == null) return false;
+            if (inscripciones == null) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE, "Inscripciones no disponibles");
 
             return Arrays.stream(inscripciones).anyMatch(i ->
-                    participanteId.equals(i.getJugadorId()) ||
-                            participanteId.equals(i.getEquipoId()));
-        } catch (Exception e) {
+                    i != null && ("APROBADA".equals(i.getEstado()) || "ACEPTADA".equals(i.getEstado())) &&
+                    (participanteId.equals(i.getJugadorId()) || participanteId.equals(i.getEquipoId())));
+        } catch (org.springframework.web.client.RestClientException e) {
             log.error("Error consultando registration-service: {}", e.getMessage());
-            return false;
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE, "No se pudieron comprobar las inscripciones", e);
         }
     }
 

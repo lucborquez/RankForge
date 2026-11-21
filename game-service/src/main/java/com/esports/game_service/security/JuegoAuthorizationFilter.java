@@ -18,7 +18,9 @@ public class JuegoAuthorizationFilter extends OncePerRequestFilter {
     public JuegoAuthorizationFilter(@Value("${jwt.secret}") String secret) { this.secret = secret; }
     @Override protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res,
             FilterChain chain) throws ServletException, IOException {
-        if (!req.getRequestURI().startsWith("/api/juegos") || Set.of("GET", "HEAD", "OPTIONS").contains(req.getMethod())) {
+        boolean catalogoAdmin = req.getRequestURI().matches("/api/juegos/admin/?");
+        if (!req.getRequestURI().startsWith("/api/juegos") || "OPTIONS".equals(req.getMethod()) ||
+                (!catalogoAdmin && Set.of("GET", "HEAD").contains(req.getMethod()))) {
             chain.doFilter(req, res); return;
         }
         String rol;

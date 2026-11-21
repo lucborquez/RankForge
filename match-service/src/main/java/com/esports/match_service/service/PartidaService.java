@@ -34,6 +34,8 @@ public class PartidaService {
 
     public PartidaResponseDTO crear(PartidaRequestDTO dto) {
 
+        validarDatos(dto);
+
         // Verificar que el torneo existe
         if (!torneoClient.torneoExiste(dto.getTorneoId())) {
             throw new RuntimeException("El torneo no existe");
@@ -54,7 +56,9 @@ public class PartidaService {
         // No duplicar enfrentamiento en la misma ronda
         if (partidaRepository.existsByTorneoIdAndParticipanteAIdAndParticipanteBIdAndRonda(
                 dto.getTorneoId(), dto.getParticipanteAId(),
-                dto.getParticipanteBId(), dto.getRonda())) {
+                dto.getParticipanteBId(), dto.getRonda()) ||
+                partidaRepository.existsByTorneoIdAndParticipanteAIdAndParticipanteBIdAndRonda(
+                dto.getTorneoId(), dto.getParticipanteBId(), dto.getParticipanteAId(), dto.getRonda())) {
             throw new RuntimeException(
                     "Ya existe este enfrentamiento en la misma ronda");
         }
@@ -93,13 +97,25 @@ public class PartidaService {
     }
 
     public PartidaResponseDTO actualizar(Long id, PartidaRequestDTO dto) {
+        validarDatos(dto);
         Partida p = partidaRepository.findById(id)
                 .orElseThrow(() -> new PartidaNotFoundException(id));
 
-        if ("CANCELADA".equals(p.getEstado()) || "FINALIZADA".equals(p.getEstado())) {
+        if (!"PROGRAMADA".equals(p.getEstado())) {
             throw new RuntimeException(
                     "No se puede modificar una partida cancelada o finalizada");
         }
+
+        if (!java.util.Objects.equals(p.getTorneoId(), dto.getTorneoId()) ||
+                !java.util.Objects.equals(p.getParticipanteAId(), dto.getParticipanteAId()) ||
+                !java.util.Objects.equals(p.getParticipanteBId(), dto.getParticipanteBId())) {
+            throw new IllegalArgumentException("Reprogramar no permite cambiar torneo ni participantes");
+        }
+        boolean duplicada = partidaRepository.findByTorneoIdAndRonda(p.getTorneoId(), dto.getRonda()).stream()
+                .anyMatch(otra -> !java.util.Objects.equals(otra.getId(), id) &&
+                        ((java.util.Objects.equals(otra.getParticipanteAId(), p.getParticipanteAId()) && java.util.Objects.equals(otra.getParticipanteBId(), p.getParticipanteBId())) ||
+                        (java.util.Objects.equals(otra.getParticipanteAId(), p.getParticipanteBId()) && java.util.Objects.equals(otra.getParticipanteBId(), p.getParticipanteAId()))));
+        if (duplicada) throw new IllegalArgumentException("Ya existe este enfrentamiento en la misma ronda");
 
         p.setFechaHora(dto.getFechaHora());
         p.setRonda(dto.getRonda());
@@ -121,6 +137,16 @@ public class PartidaService {
         Partida cancelada = partidaRepository.save(p);
         log.info("Partida cancelada: ID {}", id);
         return convertirAResponse(cancelada);
+    }
+
+    private void validarDatos(PartidaRequestDTO dto) {
+        if (dto.getTorneoId() == null || dto.getTorneoId() <= 0 || dto.getParticipanteAId() == null || dto.getParticipanteAId() <= 0 ||
+                dto.getParticipanteBId() == null || dto.getParticipanteBId() <= 0 || dto.getParticipanteAId().equals(dto.getParticipanteBId())) {
+            throw new IllegalArgumentException("Selecciona torneo y dos participantes distintos con IDs positivos");
+        }
+        if (dto.getRonda() == null || dto.getRonda().isBlank() || dto.getFechaHora() == null) throw new IllegalArgumentException("Ronda y horario son obligatorios");
+        try { java.time.LocalDateTime.parse(dto.getFechaHora()); }
+        catch (java.time.format.DateTimeParseException ex) { throw new IllegalArgumentException("Horario inválido: usa fecha y hora ISO", ex); }
     }
 
     private PartidaResponseDTO convertirAResponse(Partida p) {

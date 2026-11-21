@@ -13,7 +13,8 @@ class PremioServiceTest {
     TorneoRepository torneos = mock(TorneoRepository.class);
     PremioRepository premios = mock(PremioRepository.class);
     ClasificacionClient ranking = mock(ClasificacionClient.class);
-    PremioService service = new PremioService(torneos, premios, ranking);
+    com.esports.tournament_service.service.NotificacionTorneoService notificaciones = mock(com.esports.tournament_service.service.NotificacionTorneoService.class);
+    PremioService service = new PremioService(torneos, premios, ranking, notificaciones);
     PremioRequestDTO dto = new PremioRequestDTO(1, 7L, "Trofeo campeón");
     void torneo(String estado) {
         Torneo t = new Torneo(); t.setEstado(estado);
@@ -25,6 +26,7 @@ class PremioServiceTest {
     @Test void asignaPremioDeTorneoFinalizado() {
         torneo("FINALIZADO"); when(ranking.coincide(1L, 1, 7L)).thenReturn(true); when(premios.save(any())).thenAnswer(c -> c.getArgument(0));
         Premio p = service.asignar(1L, dto); assertEquals(7L, p.getParticipanteId()); assertEquals("Trofeo campeón", p.getDescripcion());
+        verify(notificaciones).publicar(eq(1L), eq("PREMIO_ASIGNADO"), contains("#7"));
     }
     @Test void rechazaPosicionDuplicada() { torneo("FINALIZADO"); when(premios.existsByTorneoIdAndPosicion(1L, 1)).thenReturn(true); assertThrows(ResponseStatusException.class, () -> service.asignar(1L, dto)); verify(premios, never()).save(any()); }
 }

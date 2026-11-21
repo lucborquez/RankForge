@@ -13,8 +13,10 @@ public class PremioService {
     private final TorneoRepository torneos;
     private final PremioRepository premios;
     private final ClasificacionClient clasificacion;
-    public PremioService(TorneoRepository torneos, PremioRepository premios, ClasificacionClient clasificacion) {
+    private final NotificacionTorneoService notificaciones;
+    public PremioService(TorneoRepository torneos, PremioRepository premios, ClasificacionClient clasificacion, NotificacionTorneoService notificaciones) {
         this.torneos = torneos; this.premios = premios; this.clasificacion = clasificacion;
+        this.notificaciones = notificaciones;
     }
     public List<Premio> listar(Long torneoId) {
         Torneo torneo = torneos.findById(torneoId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Torneo no encontrado"));
@@ -28,6 +30,8 @@ public class PremioService {
         if (premios.existsByTorneoIdAndPosicion(torneoId, dto.posicion())) throw new ResponseStatusException(HttpStatus.CONFLICT, "Esta posición ya tiene un premio");
         if (!clasificacion.coincide(torneoId, dto.posicion(), dto.participanteId())) throw new ResponseStatusException(HttpStatus.CONFLICT, "El participante no ocupa esa posición en la clasificación");
         Premio premio = new Premio(); premio.setTorneoId(torneoId); premio.setPosicion(dto.posicion()); premio.setParticipanteId(dto.participanteId()); premio.setDescripcion(dto.descripcion().trim());
-        return premios.save(premio);
+        Premio guardado = premios.save(premio);
+        notificaciones.publicar(torneoId, "PREMIO_ASIGNADO", "Premio asignado al participante #" + dto.participanteId() + " por el puesto " + dto.posicion() + ": " + dto.descripcion().trim());
+        return guardado;
     }
 }

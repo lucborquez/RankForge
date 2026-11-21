@@ -1,5 +1,11 @@
 # eSports Arena Manager
 
+## Estado de la integración EP3
+
+La rama `feature/lucas-ep3` incorpora identidad autenticada, permisos de equipos, reglas de inscripción, resultados con reconstrucción de ranking, premios y avisos públicos persistidos del torneo. Las pruebas unitarias seleccionadas pasan; el recorrido completo con MySQL y todos los servicios activos sigue pendiente. Esta rama todavía no constituye una entrega final verificada.
+
+Consulta [el arranque local](docs/EP3_ARRANQUE_LOCAL.md), [las reglas de partidas](docs/EP3_PARTIDAS.md), [premios](docs/EP3_PREMIOS.md), [notificaciones](docs/EP3_NOTIFICACIONES.md) y [seguridad](docs/EP3_SEGURIDAD_OPERACIONES.md). Los documentos distinguen implementación, pruebas ejecutadas y limitaciones.
+
 eSports Arena Manager es una plataforma backend orientada a la administración de torneos competitivos de videojuegos.
 El sistema fue desarrollado bajo una arquitectura de microservicios utilizando Spring Boot, permitiendo separar responsabilidades y mantener una solución modular, escalable y mantenible.
 
@@ -25,18 +31,20 @@ La solución fue diseñada bajo una arquitectura de microservicios independiente
 
 
 ## Microservicios
-|Servicio	|Puerto	|Base de datos|	Responsabilidad|
-|---|---|---|---|
-|user-service|8082|	user_service_db	|Identidades roles y estados de cuenta|cambiado---
-|game-service|8081|	game_service_db	|Catálogo de videojuegos y modalidades| cambiado---
-|team-service|8084|	team_service_db	|Equipos membresías y capitanes|cambiado---
-|tournament-service|8085|	tournament_service_db	|Motor de torneos y control de estados|--cambiado
-|registration-service|8086|	registration_service_db|	Inscripciones con validación de sanciones|cambiado---
-|match-service|8087|	match_service_db	|Programación de partidas y brackets| cambiado----
-|result-service|8088|	result_service_db	|Registro y validación de resultados| cambiado ---
-|ranking-service|8008|	ranking_service_db|	Cálculo de posiciones y estadísticas|
-|sanction-service|8090|	sanction_service_db|	Sanciones y sistema de Fair Play|---cambiado
-|auth-service| 8083|auth-service_db|Administración de perfiles de usuario y roles del sistema.|cambiado---
+| Servicio | Puerto | Base de datos | Responsabilidad |
+| --- | --- | --- | --- |
+| eureka-server | 8761 | No aplica | Registro y descubrimiento |
+| api-gateway | 8080 | No aplica | Entrada HTTP y autorización |
+| game-service | 8081 | db_game_service | Catálogo de juegos |
+| user-service | 8082 | db_user_service | Perfiles e identidad |
+| auth-service | 8083 | db_auth_service | Cuentas y JWT |
+| team-service | 8084 | db_team_service | Equipos e integrantes |
+| tournament-service | 8085 | db_tournament_service | Torneos, premios y avisos |
+| registration-service | 8086 | db_registration_service | Inscripciones y cupos |
+| match-service | 8087 | db_match_service | Partidas y calendario |
+| result-service | 8088 | db_esports_resultados | Resultados y validación |
+| ranking-service | 8089 | db_ranking_service | Clasificación y estadísticas |
+| sanction-service | 8090 | db_sanction_service | Sanciones y vigencia |
 
 ## Tecnologias usadas
 ## Backend
@@ -64,7 +72,7 @@ Usa `.env.example` como referencia. Si tu instalación requiere otro host, puert
 
 Para probar la administración desde React, inicia `game-service`, `tournament-service` y `api-gateway` con `--spring.profiles.active=local-admin`. Los tres escucharán en `127.0.0.1`. El Gateway acepta peticiones de escritura del frontend local en el puerto 5173. Arranca los servicios en el mismo equipo junto a MySQL y Eureka.
 
-Los endpoints de escritura de juegos y torneos están disponibles únicamente con ese perfil de desarrollo. La autenticación y la autorización de escritura para despliegues se implementarán en la etapa de seguridad.
+Los endpoints administrativos de juegos y torneos están disponibles con ese perfil de desarrollo y exigen JWT válido con rol ADMIN, tanto en el Gateway como al acceder directamente a los servicios. Todos deben compartir `JWT_SECRET`. Esta configuración local no acredita un despliegue público.
 
 | Servicio | Swagger UI | OpenAPI JSON |
 | --- | --- | --- |
@@ -78,7 +86,7 @@ Las rutas actuales `/api/juegos` y `/api/torneos` se mantienen para el frontend.
 2. Crear usuarios          -> user-service
 3. Crear equipo            -> team-service  (requiere usuario activo y juego)
 4. Crear torneo            -> tournament-service  (requiere juego)
-5. Abrir torneo            -> tournament-service  PUT /estado?nuevo=ABIERTO
+5. Abrir torneo            -> tournament-service  PATCH /api/torneos/{id}/estado con JSON {"estado":"ABIERTO"}
 6. Inscribir equipo        -> registration-service  (valida sanciones y cupos)
 7. Crear partida           -> match-service  (valida inscripciones)
 8. Registrar resultado     -> result-service

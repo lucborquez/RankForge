@@ -9,6 +9,11 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class JuegoSecurityTest {
+    @Test void catalogoAdministrativoNoEsPublico() throws Exception {
+        var req = new MockHttpServletRequest("GET", "/api/juegos/admin");
+        var res = new MockHttpServletResponse(); filter.doFilter(req, res, new MockFilterChain());
+        assertEquals(401, res.getStatus());
+    }
     byte[] key = "test-only-signing-key-for-results-not-production".getBytes(java.nio.charset.StandardCharsets.UTF_8);
     JuegoAuthorizationFilter filter = new JuegoAuthorizationFilter(Base64.getEncoder().encodeToString(key));
     String token(String rol, long vigencia) {

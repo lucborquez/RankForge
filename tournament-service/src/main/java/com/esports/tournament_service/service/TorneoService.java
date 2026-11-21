@@ -22,11 +22,13 @@ public class TorneoService {
 
     private final TorneoRepository torneoRepository;
     private final JuegoClient juegoClient;
+    private final NotificacionTorneoService notificaciones;
 
     public TorneoService(TorneoRepository torneoRepository,
-                         JuegoClient juegoClient) {
+                         JuegoClient juegoClient, NotificacionTorneoService notificaciones) {
         this.torneoRepository = torneoRepository;
         this.juegoClient = juegoClient;
+        this.notificaciones = notificaciones;
     }
 
     // Crear torneo
@@ -123,6 +125,7 @@ public class TorneoService {
 
         torneo.setEstado(dto.getEstado());
         Torneo actualizado = torneoRepository.save(torneo);
+        notificaciones.publicar(id, "CAMBIO_ESTADO", "Estado del torneo: " + estadoAnterior + " → " + dto.getEstado());
         log.info("Torneo ID {} cambió estado: {} → {}",
                 id, estadoAnterior, dto.getEstado());
         return convertirAResponse(actualizado);
