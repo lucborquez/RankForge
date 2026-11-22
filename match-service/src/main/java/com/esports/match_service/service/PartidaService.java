@@ -36,10 +36,7 @@ public class PartidaService {
 
         validarDatos(dto);
 
-        // Verificar que el torneo existe
-        if (!torneoClient.torneoExiste(dto.getTorneoId())) {
-            throw new RuntimeException("El torneo no existe");
-        }
+        torneoClient.exigirModificable(dto.getTorneoId());
 
         // Verificar que los participantes estén inscritos
         if (!inscripcionClient.participanteInscrito(
@@ -100,6 +97,7 @@ public class PartidaService {
         validarDatos(dto);
         Partida p = partidaRepository.findById(id)
                 .orElseThrow(() -> new PartidaNotFoundException(id));
+        torneoClient.exigirModificable(p.getTorneoId());
 
         if (!"PROGRAMADA".equals(p.getEstado())) {
             throw new RuntimeException(
@@ -128,6 +126,7 @@ public class PartidaService {
     public PartidaResponseDTO cancelar(Long id) {
         Partida p = partidaRepository.findById(id)
                 .orElseThrow(() -> new PartidaNotFoundException(id));
+        torneoClient.exigirModificable(p.getTorneoId());
 
         if ("CANCELADA".equals(p.getEstado())) {
             throw new RuntimeException("La partida ya está cancelada");

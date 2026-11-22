@@ -1,7 +1,5 @@
 package com.esports.match_service.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -9,7 +7,6 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class TorneoClient {
 
-    private static final Logger log = LoggerFactory.getLogger(TorneoClient.class);
 
     @Value("${tournament.service.url}")
     private String tournamentServiceUrl;
@@ -17,18 +14,30 @@ public class TorneoClient {
     private final RestTemplate restTemplate;
 
     public TorneoClient() {
-        this.restTemplate = new RestTemplate();
+        var factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(3000); factory.setReadTimeout(5000);
+        this.restTemplate = new RestTemplate(factory);
     }
 
-    public boolean torneoExiste(Long torneoId) {
+    public TorneoClient(RestTemplate restTemplate) { this.restTemplate = restTemplate; }
+
+    public record TorneoEstado(Long id, String estado) {}
+
+    public void exigirModificable(Long torneoId) {
+        TorneoEstado torneo;
         try {
-            String url = tournamentServiceUrl + "/api/torneos/" + torneoId;
-            restTemplate.getForObject(url, Object.class);
-            return true;
-        } catch (Exception e) {
-            log.error("Error consultando tournament-service para torneoId {}: {}",
-                    torneoId, e.getMessage());
-            return false;
+            torneo = restTemplate.getForObject(tournamentServiceUrl + "/api/torneos/" + torneoId, TorneoEstado.class);
+        } catch (org.springframework.web.client.HttpClientErrorException.NotFound ex) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Torneo no encontrado");
+        } catch (org.springframework.web.client.RestClientException ex) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE, "No se pudo comprobar el estado del torneo");
+        }
+        if (torneo == null || !java.util.Objects.equals(torneoId, torneo.id()) || torneo.estado() == null) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE, "Estado del torneo no disponible");
+        }
+        if (!java.util.Set.of("ABIERTO", "CERRADO", "EN_CURSO").contains(torneo.estado())) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "El estado del torneo no permite modificar partidas");
         }
     }
+
 }

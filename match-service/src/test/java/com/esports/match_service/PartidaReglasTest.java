@@ -15,6 +15,26 @@ class PartidaReglasTest {
     TorneoClient torneo = mock(TorneoClient.class);
     InscripcionClient inscripciones = mock(InscripcionClient.class);
     PartidaService service = new PartidaService(repo, torneo, inscripciones);
+    void torneoCerradoDefinitivamente() {
+        doThrow(new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "Finalizado"))
+                .when(torneo).exigirModificable(1L);
+    }
+    void partidaExistente() {
+        Partida p = new Partida(); p.setId(5L); p.setTorneoId(1L); p.setParticipanteAId(2L); p.setParticipanteBId(3L); p.setEstado("PROGRAMADA");
+        when(repo.findById(5L)).thenReturn(Optional.of(p));
+    }
+    @Test void crearNoEscribeSiTorneoFinalizado() {
+        torneoCerradoDefinitivamente(); assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> service.crear(datos()));
+        verifyNoInteractions(repo, inscripciones);
+    }
+    @Test void reprogramarNoEscribeSiTorneoFinalizado() {
+        partidaExistente(); torneoCerradoDefinitivamente(); assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> service.actualizar(5L, datos()));
+        verify(repo, never()).save(any());
+    }
+    @Test void cancelarNoEscribeSiTorneoFinalizado() {
+        partidaExistente(); torneoCerradoDefinitivamente(); assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> service.cancelar(5L));
+        verify(repo, never()).save(any());
+    }
     PartidaRequestDTO datos() {
         var d = new PartidaRequestDTO(); d.setTorneoId(1L); d.setParticipanteAId(2L); d.setParticipanteBId(3L); d.setRonda("Final"); d.setFechaHora("2026-12-01T12:00"); return d;
     }
@@ -25,7 +45,7 @@ class PartidaReglasTest {
         var d = datos(); d.setFechaHora("mañana"); assertThrows(IllegalArgumentException.class, () -> service.crear(d)); verifyNoInteractions(repo);
     }
     @Test void rechazaEnfrentamientoInvertidoEnMismaRonda() {
-        when(torneo.torneoExiste(1L)).thenReturn(true); when(inscripciones.participanteInscrito(anyLong(), anyLong())).thenReturn(true);
+        when(inscripciones.participanteInscrito(anyLong(), anyLong())).thenReturn(true);
         when(repo.existsByTorneoIdAndParticipanteAIdAndParticipanteBIdAndRonda(1L, 3L, 2L, "Final")).thenReturn(true);
         assertThrows(RuntimeException.class, () -> service.crear(datos())); verify(repo, never()).save(any());
     }

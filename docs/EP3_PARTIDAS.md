@@ -10,4 +10,6 @@ Revisión del 20 de noviembre de 2026.
 
 Evidencia: 13 pruebas aprobadas (5 del cliente de inscripciones, 4 de reglas y 4 de seguridad). Clientes y repositorios simulados; no sustituyen pruebas con MySQL y servicios activos.
 
-Pendientes: serializar creación simultánea de enfrentamientos, comprobar estado del torneo en cada mutación y coordinar cancelación/reprogramación con resultados ya registrados. La comprobación de duplicados actual es de aplicación y no garantiza exclusión concurrente.
+Actualización del 22 de noviembre: crear, reprogramar y cancelar consultan el estado del torneo. Sólo admiten ABIERTO, CERRADO o EN_CURSO; FINALIZADO, CANCELADO y BORRADOR se rechazan con 409. Fallos HTTP o respuestas incompletas producen 503 y no autorizan cambios. El cliente utiliza límites de conexión/lectura de 3/5 segundos. Se comprobaron 22 pruebas seleccionadas, incluidas las tres mutaciones bloqueadas ante un torneo finalizado.
+
+Pendientes: serializar creación simultánea de enfrentamientos y coordinar cancelación/reprogramación con resultados ya registrados. La consulta del estado no constituye una transacción distribuida: un cierre simultáneo exige coordinación adicional. La comprobación de duplicados actual es de aplicación y no garantiza exclusión concurrente.
