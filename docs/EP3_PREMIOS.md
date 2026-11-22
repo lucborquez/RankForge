@@ -17,6 +17,8 @@ Entidad `Premio` en tournament-service, restricción única por torneo y posici�
 
 ## Evidencia y límites
 
+Revisión del 22 de noviembre: la edición de la configuración del torneo se rechaza con 409 desde EN_CURSO y también en FINALIZADO o CANCELADO. Así no se altera el juego, las fechas o la modalidad de un torneo que ya terminó mediante el endpoint de edición. La suite seleccionada de torneos suma 19 pruebas aprobadas, incluidas tres restricciones de estado y una edición válida de borrador. Esto no resuelve por sí solo las correcciones de resultados posteriores al cierre entre servicios.
+
 Diez pruebas unitarias de premios y seguridad aprobadas el 20 de noviembre. Cubren ocultamiento antes del cierre, rechazo de asignación anticipada, posición incorrecta, duplicado, asignación válida y acceso por rol/token. Repositorios y cliente de clasificación están simulados.
 
 Frontend ofrece consulta en el detalle finalizado y asignación en Organización sólo para administradores. El servidor vuelve a comprobar permisos y clasificación.

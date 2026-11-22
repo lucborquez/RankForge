@@ -86,10 +86,11 @@ public class TorneoService {
                 .orElseThrow(() -> new RuntimeException(
                         "Torneo no encontrado con ID: " + id));
 
-        // No se puede modificar un torneo en curso
-        if (torneo.getEstado().equals("EN_CURSO")) {
-            throw new RuntimeException(
-                    "No se puede modificar un torneo que está en curso"
+        // La configuración queda cerrada desde el inicio de la competición.
+        if (!List.of("BORRADOR", "ABIERTO", "CERRADO").contains(torneo.getEstado())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.CONFLICT,
+                    "No se puede modificar la configuración de un torneo en curso, finalizado o cancelado"
             );
         }
 

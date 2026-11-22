@@ -6,6 +6,8 @@ La rama `feature/lucas-ep3` incorpora identidad autenticada, permisos de equipos
 
 Consulta [el arranque local](docs/EP3_ARRANQUE_LOCAL.md), [las reglas de partidas](docs/EP3_PARTIDAS.md), [premios](docs/EP3_PREMIOS.md), [notificaciones](docs/EP3_NOTIFICACIONES.md) y [seguridad](docs/EP3_SEGURIDAD_OPERACIONES.md). Los documentos distinguen implementación, pruebas ejecutadas y limitaciones.
 
+El [informe de integración](docs/EP3_INFORME_INTEGRACION.md) reúne los cambios, la evidencia disponible y lo que falta para aceptar la entrega.
+
 eSports Arena Manager es una plataforma backend orientada a la administración de torneos competitivos de videojuegos.
 El sistema fue desarrollado bajo una arquitectura de microservicios utilizando Spring Boot, permitiendo separar responsabilidades y mantener una solución modular, escalable y mantenible.
 
