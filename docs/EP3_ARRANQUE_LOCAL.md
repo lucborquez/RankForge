@@ -37,7 +37,7 @@ Copia el resultado a JWT_SECRET en todas las terminales del backend. No lo publi
 Mantén una terminal por servicio. Primero inicia Eureka:
 
 ```powershell
-.\eureka-server\mvnw.cmd -f .\eureka-server\pom.xml spring-boot:run
+.\team-service\mvnw.cmd -f .\eureka-server\pom.xml spring-boot:run
 ```
 
 Espera el mensaje `Started` y abre http://localhost:8761. Después, desde otras terminales configuradas, usa el siguiente comando, reemplazando `auth-service` por cada nombre de la tabla:
