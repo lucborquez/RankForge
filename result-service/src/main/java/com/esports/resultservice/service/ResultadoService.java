@@ -19,6 +19,7 @@ public class ResultadoService {
 
     private final ResultadoRepository resultadoRepository;
     private final MatchClient matchClient;
+    private final com.esports.resultservice.client.TorneoClient torneos;
     private final com.esports.resultservice.repository.ResultadoPartidaLockRepository bloqueos;
 
     // Crear resultado validando que la partida exista y no haya duplicado
@@ -123,6 +124,7 @@ public class ResultadoService {
             return existente;
         }
 
+        torneos.exigirModificable(matchClient.obtener(existente.getPartidaId()).torneoId());
         existente.setEstadoValidacion("ANULADO");
         existente.setJustificacionAnulacion(justificacion);
 
@@ -146,6 +148,7 @@ public class ResultadoService {
         if (!java.util.Objects.equals(ganador, dto.getGanadorId())) {
             throw new IllegalArgumentException("El ganador no corresponde al marcador y participantes");
         }
+        torneos.exigirModificable(partida.torneoId());
     }
 
     private Resultado buscarParaModificar(Long id) {

@@ -12,7 +12,8 @@ import static org.mockito.Mockito.*;
 class ResultadoReglasTest {
     ResultadoRepository repository = mock(ResultadoRepository.class);
     MatchClient partidas = mock(MatchClient.class);
-    ResultadoService service = new ResultadoService(repository, partidas,
+    com.esports.resultservice.client.TorneoClient torneos = mock(com.esports.resultservice.client.TorneoClient.class);
+    ResultadoService service = new ResultadoService(repository, partidas, torneos,
         mock(com.esports.resultservice.repository.ResultadoPartidaLockRepository.class));
     ResultadoRequestDTO dto = new ResultadoRequestDTO(3L, 7L, 2, 1, null);
     void partida() { when(partidas.obtener(3L)).thenReturn(new MatchClient.Partida(3L, 1L, 7L, 8L, "PROGRAMADA")); }
@@ -62,6 +63,21 @@ class ResultadoReglasTest {
         Resultado r = new Resultado(); r.setEstadoValidacion("ANULADO"); r.setJustificacionAnulacion("Original");
         when(repository.buscarParaModificar(4L)).thenReturn(Optional.of(r));
         assertEquals("Original", service.anularResultado(4L, "Otro motivo").getJustificacionAnulacion());
+        verify(repository, never()).save(any());
+    }
+    @Test void torneoFinalizadoImpideCrearEditarValidarYAnular() {
+        partida();
+        doThrow(new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT))
+            .when(torneos).exigirModificable(1L);
+        Resultado r = new Resultado(); r.setPartidaId(3L); r.setEstadoValidacion("PENDIENTE");
+        r.setPuntajeA(2); r.setPuntajeB(1); r.setGanadorId(7L);
+        when(repository.buscarParaModificar(4L)).thenReturn(Optional.of(r));
+        assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> service.crearResultado(dto));
+        assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> service.actualizarResultado(4L, dto));
+        assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> service.validarResultado(4L));
+        assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> service.anularResultado(4L, "Corrección"));
+        assertEquals("PENDIENTE", r.getEstadoValidacion());
+        assertNull(r.getJustificacionAnulacion());
         verify(repository, never()).save(any());
     }
 }
