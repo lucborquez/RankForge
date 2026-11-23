@@ -21,5 +21,3 @@ class TorneoEstadoTest {
         assertEquals(503, assertThrows(ResponseStatusException.class, () -> client.exigirModificable(1L)).getStatusCode().value());
     }
 }
-
-

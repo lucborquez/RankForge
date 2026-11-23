@@ -7,7 +7,8 @@ import com.esports.match_service.dto.PartidaResponseDTO;
 import com.esports.match_service.exception.PartidaNotFoundException;
 import com.esports.match_service.model.Partida;
 import com.esports.match_service.repository.PartidaRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -23,15 +24,19 @@ public class PartidaService {
     private final PartidaRepository partidaRepository;
     private final TorneoClient torneoClient;
     private final InscripcionClient inscripcionClient;
+    private final com.esports.match_service.repository.PartidaTorneoLockRepository bloqueos;
 
     public PartidaService(PartidaRepository partidaRepository,
                           TorneoClient torneoClient,
-                          InscripcionClient inscripcionClient) {
+                          InscripcionClient inscripcionClient,
+                          com.esports.match_service.repository.PartidaTorneoLockRepository bloqueos) {
         this.partidaRepository = partidaRepository;
         this.torneoClient = torneoClient;
         this.inscripcionClient = inscripcionClient;
+        this.bloqueos = bloqueos;
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public PartidaResponseDTO crear(PartidaRequestDTO dto) {
 
         validarDatos(dto);
@@ -51,6 +56,7 @@ public class PartidaService {
         }
 
         // No duplicar enfrentamiento en la misma ronda
+        bloqueos.bloquear(dto.getTorneoId());
         if (partidaRepository.existsByTorneoIdAndParticipanteAIdAndParticipanteBIdAndRonda(
                 dto.getTorneoId(), dto.getParticipanteAId(),
                 dto.getParticipanteBId(), dto.getRonda()) ||
@@ -93,8 +99,10 @@ public class PartidaService {
         return convertirAResponse(p);
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public PartidaResponseDTO actualizar(Long id, PartidaRequestDTO dto) {
         validarDatos(dto);
+        bloqueos.bloquear(dto.getTorneoId());
         Partida p = partidaRepository.findById(id)
                 .orElseThrow(() -> new PartidaNotFoundException(id));
         torneoClient.exigirModificable(p.getTorneoId());

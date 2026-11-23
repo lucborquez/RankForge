@@ -14,7 +14,15 @@ class PartidaReglasTest {
     PartidaRepository repo = mock(PartidaRepository.class);
     TorneoClient torneo = mock(TorneoClient.class);
     InscripcionClient inscripciones = mock(InscripcionClient.class);
-    PartidaService service = new PartidaService(repo, torneo, inscripciones);
+    com.esports.match_service.repository.PartidaTorneoLockRepository bloqueos = mock(com.esports.match_service.repository.PartidaTorneoLockRepository.class);
+    PartidaService service = new PartidaService(repo, torneo, inscripciones, bloqueos);
+    @Test void falloDelBloqueoImpideCrearOReprogramar() {
+        when(inscripciones.participanteInscrito(anyLong(), anyLong())).thenReturn(true);
+        doThrow(new IllegalStateException("Bloqueo no disponible")).when(bloqueos).bloquear(1L);
+        assertThrows(IllegalStateException.class, () -> service.crear(datos()));
+        assertThrows(IllegalStateException.class, () -> service.actualizar(5L, datos()));
+        verifyNoInteractions(repo);
+    }
     void torneoCerradoDefinitivamente() {
         doThrow(new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "Finalizado"))
                 .when(torneo).exigirModificable(1L);
