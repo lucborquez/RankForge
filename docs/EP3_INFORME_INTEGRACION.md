@@ -2,6 +2,12 @@
 
 Revisión del 22 de noviembre de 2026. Responsable de la integración descrita: Lucas Borquez. Se conservan los aportes de Nicolás Lara y Jhon Olivares en las ramas de trabajo del equipo.
 
+## Verificación de entrega del 23 de noviembre
+
+El frontend y los servicios se ejecutaron con MySQL local. En el Gateway se probaron visitante, jugador, organizador y administrador con datos sintéticos. El administrador creó un juego y un torneo. Dos jugadores se inscribieron y el organizador aprobó ambas inscripciones y programó la final. La API rechazó con 409 el intento de cerrar sin resultado. Una victoria por 2 a 1, validada por el organizador, situó al ganador en primer lugar. El administrador finalizó el torneo y asignó el premio. El visitante consultó ese premio y los avisos. Se comprobó que el ID del premiado coincidía con el ganador.
+
+La [evidencia del recorrido](EP3_Postman/recorrido-cuatro-roles.json) reúne método, ruta, rol y estado de 30 solicitudes. Las [pruebas de jugador](EP3_Postman/jugador-http-23nov.json) incluyen el rechazo 403 al consultar el listado global. Se conservaron los registros de prueba para revisar la demostración y se retiraron los roles elevados de las cuentas temporales. Las secciones siguientes reflejan las revisiones previas. La prueba final fue secuencial y queda pendiente la carrera de cierre con escrituras simultáneas entre servicios.
+
 ## Resultado y alcance
 
 Se conectaron las pantallas operativas de React a los servicios Spring Boot y se corrigieron controles de identidad, permisos y reglas del torneo. El código incluye pruebas automatizadas seleccionadas y documentación de arranque. No se ha completado la aceptación con MySQL y todos los servicios activos, por lo que no se declara la entrega terminada.

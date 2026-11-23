@@ -1,0 +1,182 @@
+[
+  {
+    "rol": "ADMIN",
+    "metodo": "POST",
+    "ruta": "/auth/registro",
+    "estado": 201
+  },
+  {
+    "rol": "ADMIN",
+    "metodo": "POST",
+    "ruta": "/auth/login",
+    "estado": 200
+  },
+  {
+    "rol": "ADMIN",
+    "metodo": "POST",
+    "ruta": "/usuarios/me",
+    "estado": 200
+  },
+  {
+    "rol": "ORGANIZADOR",
+    "metodo": "POST",
+    "ruta": "/auth/registro",
+    "estado": 201
+  },
+  {
+    "rol": "ORGANIZADOR",
+    "metodo": "POST",
+    "ruta": "/auth/login",
+    "estado": 200
+  },
+  {
+    "rol": "ORGANIZADOR",
+    "metodo": "POST",
+    "ruta": "/usuarios/me",
+    "estado": 200
+  },
+  {
+    "rol": "ADMIN",
+    "metodo": "POST",
+    "ruta": "/juegos",
+    "estado": 201
+  },
+  {
+    "rol": "ADMIN",
+    "metodo": "POST",
+    "ruta": "/torneos",
+    "estado": 201
+  },
+  {
+    "rol": "ADMIN",
+    "metodo": "PATCH",
+    "ruta": "/torneos/1/estado",
+    "estado": 200
+  },
+  {
+    "rol": "JUGADOR",
+    "metodo": "POST",
+    "ruta": "/auth/registro",
+    "estado": 201
+  },
+  {
+    "rol": "JUGADOR",
+    "metodo": "POST",
+    "ruta": "/auth/login",
+    "estado": 200
+  },
+  {
+    "rol": "JUGADOR",
+    "metodo": "POST",
+    "ruta": "/usuarios/me",
+    "estado": 200
+  },
+  {
+    "rol": "JUGADOR",
+    "metodo": "POST",
+    "ruta": "/inscripciones",
+    "estado": 201
+  },
+  {
+    "rol": "ORGANIZADOR",
+    "metodo": "PUT",
+    "ruta": "/inscripciones/1/estado?estado=APROBADA",
+    "estado": 200
+  },
+  {
+    "rol": "JUGADOR",
+    "metodo": "POST",
+    "ruta": "/auth/registro",
+    "estado": 201
+  },
+  {
+    "rol": "JUGADOR",
+    "metodo": "POST",
+    "ruta": "/auth/login",
+    "estado": 200
+  },
+  {
+    "rol": "JUGADOR",
+    "metodo": "POST",
+    "ruta": "/usuarios/me",
+    "estado": 200
+  },
+  {
+    "rol": "JUGADOR",
+    "metodo": "POST",
+    "ruta": "/inscripciones",
+    "estado": 201
+  },
+  {
+    "rol": "ORGANIZADOR",
+    "metodo": "PUT",
+    "ruta": "/inscripciones/2/estado?estado=APROBADA",
+    "estado": 200
+  },
+  {
+    "rol": "ADMIN",
+    "metodo": "PATCH",
+    "ruta": "/torneos/1/estado",
+    "estado": 200
+  },
+  {
+    "rol": "ADMIN",
+    "metodo": "PATCH",
+    "ruta": "/torneos/1/estado",
+    "estado": 200
+  },
+  {
+    "rol": "ORGANIZADOR",
+    "metodo": "POST",
+    "ruta": "/partidas",
+    "estado": 201
+  },
+  {
+    "rol": "ADMIN",
+    "metodo": "PATCH",
+    "ruta": "/torneos/1/estado",
+    "estado": 409
+  },
+  {
+    "rol": "ORGANIZADOR",
+    "metodo": "POST",
+    "ruta": "/resultados",
+    "estado": 201
+  },
+  {
+    "rol": "ORGANIZADOR",
+    "metodo": "PATCH",
+    "ruta": "/resultados/1/validar",
+    "estado": 200
+  },
+  {
+    "rol": "VISITANTE",
+    "metodo": "GET",
+    "ruta": "/rankings/torneo/1",
+    "estado": 200
+  },
+  {
+    "rol": "ADMIN",
+    "metodo": "PATCH",
+    "ruta": "/torneos/1/estado",
+    "estado": 200
+  },
+  {
+    "rol": "ADMIN",
+    "metodo": "POST",
+    "ruta": "/torneos/1/premios",
+    "estado": 201
+  },
+  {
+    "rol": "VISITANTE",
+    "metodo": "GET",
+    "ruta": "/torneos/1/premios",
+    "estado": 200
+  },
+  {
+    "rol": "VISITANTE",
+    "metodo": "GET",
+    "ruta": "/torneos/1/notificaciones",
+    "estado": 200
+  }
+]
