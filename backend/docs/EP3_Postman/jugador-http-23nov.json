@@ -1,0 +1,25 @@
+[
+  {
+    "ruta": "auth/registro",
+    "estado": 201
+  },
+  {
+    "ruta": "auth/login",
+    "estado": 200
+  },
+  {
+    "estado": 200,
+    "metodo": "Post",
+    "ruta": "usuarios/me"
+  },
+  {
+    "estado": 200,
+    "metodo": "Get",
+    "ruta": "usuarios/me"
+  },
+  {
+    "estado": 403,
+    "metodo": "Get",
+    "ruta": "inscripciones"
+  }
+]
