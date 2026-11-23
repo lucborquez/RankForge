@@ -6,6 +6,9 @@ import java.util.List;
 
 public interface PartidaRepository extends JpaRepository<Partida, Long> {
 
+    @org.springframework.data.jpa.repository.Query("select p.torneoId from Partida p where p.id = :id")
+    java.util.Optional<Long> obtenerTorneoId(@org.springframework.data.repository.query.Param("id") Long id);
+
     List<Partida> findByTorneoId(Long torneoId);
     List<Partida> findByTorneoIdAndRonda(Long torneoId, String ronda);
     List<Partida> findByEstado(String estado);

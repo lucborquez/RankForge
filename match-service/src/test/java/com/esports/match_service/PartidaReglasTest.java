@@ -28,12 +28,26 @@ class PartidaReglasTest {
                 .when(torneo).exigirModificable(1L);
     }
     void partidaExistente() {
+        when(repo.obtenerTorneoId(5L)).thenReturn(Optional.of(1L));
         Partida p = new Partida(); p.setId(5L); p.setTorneoId(1L); p.setParticipanteAId(2L); p.setParticipanteBId(3L); p.setEstado("PROGRAMADA");
         when(repo.findById(5L)).thenReturn(Optional.of(p));
     }
     @Test void crearNoEscribeSiTorneoFinalizado() {
         torneoCerradoDefinitivamente(); assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> service.crear(datos()));
         verifyNoInteractions(repo, inscripciones);
+    }
+    @Test void falloDelBloqueoNoCancelaPartida() {
+        partidaExistente();
+        doThrow(new IllegalStateException("Bloqueo no disponible")).when(bloqueos).bloquear(1L);
+        assertThrows(IllegalStateException.class, () -> service.cancelar(5L));
+        verify(repo, never()).findById(anyLong());
+        verify(repo, never()).save(any());
+    }
+    @Test void reprogramarNoRevivePartidaCancelada() {
+        partidaExistente();
+        repo.findById(5L).orElseThrow().setEstado("CANCELADA");
+        assertThrows(RuntimeException.class, () -> service.actualizar(5L, datos()));
+        verify(repo, never()).save(any());
     }
     @Test void reprogramarNoEscribeSiTorneoFinalizado() {
         partidaExistente(); torneoCerradoDefinitivamente(); assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> service.actualizar(5L, datos()));

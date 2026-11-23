@@ -39,7 +39,7 @@ Auditoría npm del 21 de noviembre: dos avisos moderados ligados a minimatch y k
 
 La guía EP3_ARRANQUE_LOCAL explica MySQL, Java, variables, orden de servicios y frontend. El protocolo EP3_ACEPTACION_INTEGRADA define veinte casos positivos y negativos por rol. Todavía no hay evidencias de solicitudes HTTP reales ni capturas de ese recorrido; no se reutilizan las capturas de octubre para aparentar integración EP3.
 
-Antes de cerrar la entrega deben resolverse la creación concurrente de partidas, la coordinación de cambios después del cierre con resultados y premios y la validación de existencia del destinatario de sanciones. También deben comprobarse la persistencia al recargar, la expiración de sesión, los permisos por acceso directo y la recuperación del ranking tras fallos.
+Antes de cerrar la entrega deben verificarse con MySQL los bloqueos implementados para crear, reprogramar y cancelar partidas; también deben resolverse la coordinación del cierre simultáneo con resultados y premios y la validación de existencia del destinatario de sanciones. Los resultados ya rechazan mutaciones cuando la consulta remota informa un torneo finalizado, sin garantía de atomicidad entre servicios. También deben comprobarse la persistencia al recargar, la expiración de sesión, los permisos por acceso directo y la recuperación del ranking tras fallos.
 
 ## Documentación y publicación
 

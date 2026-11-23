@@ -29,7 +29,7 @@ Registrar en cada ejecución: fecha, commits de frontend/backend, rol, solicitud
 
 ## Revisiones de consistencia todavía abiertas
 
-La validación de duplicados de partidas aún necesita exclusión concurrente. Las correcciones de resultados después del cierre deben coordinarse con premios y clasificación. Los endpoints manuales de escritura de ranking ya se rechazan con 409 para preservar la clasificación derivada; comprobar también ese rechazo en la ejecución integrada. No marcar estas condiciones como aprobadas sólo porque pasen los casos unitarios.
+Las partidas incorporan exclusión por torneo para altas, reprogramaciones y cancelaciones; falta probar solicitudes concurrentes con MySQL. Las mutaciones de resultados comprueban el estado remoto y rechazan torneos finalizados, pero la carrera entre esa comprobación y un cierre simultáneo debe coordinarse con premios y clasificación. Los endpoints manuales de escritura de ranking ya se rechazan con 409 para preservar la clasificación derivada; comprobar también ese rechazo en la ejecución integrada. No marcar estas condiciones como aprobadas sólo porque pasen los casos unitarios.
 
 ## Evidencia disponible
 

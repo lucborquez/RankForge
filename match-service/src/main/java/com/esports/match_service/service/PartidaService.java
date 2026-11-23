@@ -131,7 +131,12 @@ public class PartidaService {
         return convertirAResponse(actualizada);
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public PartidaResponseDTO cancelar(Long id) {
+        // Consultar sólo el ID evita cargar una entidad obsoleta antes de esperar el bloqueo.
+        Long torneoId = partidaRepository.obtenerTorneoId(id)
+                .orElseThrow(() -> new PartidaNotFoundException(id));
+        bloqueos.bloquear(torneoId);
         Partida p = partidaRepository.findById(id)
                 .orElseThrow(() -> new PartidaNotFoundException(id));
         torneoClient.exigirModificable(p.getTorneoId());
