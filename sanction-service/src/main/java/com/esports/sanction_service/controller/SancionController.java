@@ -15,14 +15,18 @@ import java.util.List;
 public class SancionController {
 
     private final SancionService sancionService;
+    private final com.esports.sanction_service.client.DestinatarioClient destinatarios;
 
-    public SancionController(SancionService sancionService) {
+    public SancionController(SancionService sancionService, com.esports.sanction_service.client.DestinatarioClient destinatarios) {
         this.sancionService = sancionService;
+        this.destinatarios = destinatarios;
     }
 
     // POST /api/sanciones → Crear nueva sancion
     @PostMapping
-    public ResponseEntity<SancionResponseDTO> crear(@Valid @RequestBody SancionRequestDTO dto) {
+    public ResponseEntity<SancionResponseDTO> crear(@Valid @RequestBody SancionRequestDTO dto,
+            @RequestHeader("Authorization") String authorization) {
+        destinatarios.exigirExistente(dto.getUsuarioId(), dto.getEquipoId(), authorization);
         return ResponseEntity.status(HttpStatus.CREATED).body(sancionService.crear(dto));
     }
 

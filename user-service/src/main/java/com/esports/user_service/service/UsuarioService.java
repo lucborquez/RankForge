@@ -131,6 +131,8 @@ public class UsuarioService {
         return usuarioRepository.findById(id).map(u -> u.getEstado()).orElse(false);
     }
 
+    public boolean existe(Long id) { return usuarioRepository.existsById(id); }
+
     private UsuarioResponseDTO convertirAResponse(Usuario u) {
         UsuarioResponseDTO r = new UsuarioResponseDTO();
         r.setId(u.getId());

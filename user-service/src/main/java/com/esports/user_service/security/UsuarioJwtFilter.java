@@ -43,7 +43,9 @@ public class UsuarioJwtFilter extends OncePerRequestFilter {
             identidad = new Identidad(claims.getSubject(), rol);
         } catch (RuntimeException ex) { error(response, 401); return; }
         boolean propio = path.equals("/api/usuarios/me") || path.equals("/api/usuarios/me/");
-        if (!propio && !"ADMIN".equals(identidad.rol())) { error(response, 403); return; }
+        boolean consultaExistencia = "GET".equals(request.getMethod()) && path.matches("/api/usuarios/[0-9]+/existe")
+                && "ORGANIZADOR".equals(identidad.rol());
+        if (!propio && !consultaExistencia && !"ADMIN".equals(identidad.rol())) { error(response, 403); return; }
         request.setAttribute(IDENTIDAD, identidad);
         chain.doFilter(request, response);
     }

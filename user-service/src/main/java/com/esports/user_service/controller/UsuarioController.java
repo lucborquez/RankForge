@@ -57,4 +57,7 @@ public class UsuarioController {
     public ResponseEntity<Boolean> verificarActivo(@PathVariable Long id) {
         return ResponseEntity.ok(usuarioService.existeYActivo(id));
     }
+
+    @GetMapping("/{id}/existe")
+    public boolean existe(@PathVariable Long id) { return usuarioService.existe(id); }
 }

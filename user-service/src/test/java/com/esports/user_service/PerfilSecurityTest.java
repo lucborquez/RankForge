@@ -51,4 +51,22 @@ class PerfilSecurityTest {
         filter.doFilter(req, res, new MockFilterChain());
         assertEquals(401, res.getStatus());
     }
+    @Test void existenciaSoloParaRolesDeOperacion() throws Exception {
+        for (String rol : List.of("ADMIN", "ORGANIZADOR", "JUGADOR")) {
+            var req = new MockHttpServletRequest("GET", "/api/usuarios/7/existe");
+            req.addHeader("Authorization", "Bearer " + token(rol));
+            var res = new MockHttpServletResponse();
+            filter.doFilter(req, res, new MockFilterChain());
+            assertEquals(rol.equals("JUGADOR") ? 403 : 200, res.getStatus());
+        }
+    }
+    @Test void organizadorNoObtienePerfilNiModificaExistencia() throws Exception {
+        for (String path : List.of("/api/usuarios/7", "/api/usuarios/7/existe")) {
+            var req = new MockHttpServletRequest("PUT", path);
+            req.addHeader("Authorization", "Bearer " + token("ORGANIZADOR"));
+            var res = new MockHttpServletResponse();
+            filter.doFilter(req, res, new MockFilterChain());
+            assertEquals(403, res.getStatus());
+        }
+    }
 }
