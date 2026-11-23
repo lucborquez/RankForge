@@ -31,6 +31,8 @@ Frontend, 21 de noviembre: `npm ci`, `npm test` y `npm run build` correctos. Se 
 
 Backend: los informes Surefire de las suites seleccionadas registran pruebas de perfil, equipos, inscripciones, sanciones, resultados, ranking, juegos, partidas y torneos. Cada documento de área especifica sus casos y resultados. No se presenta ese conjunto como una ejecución de todos los contextos Spring ni como prueba de MySQL. Las pruebas recientes de partidas verifican rechazo ante torneos finalizados, cancelados o en borrador.
 
+Empaquetado del 22 de noviembre, código `0beded1`: los doce módulos completaron `mvnw -DskipTests package` con JDK 26 y generaron sus JAR. Incluye Eureka, Gateway y los diez servicios de negocio. Este comando compila y empaqueta; omite ejecutar pruebas y no inicia los contextos ni comprueba conexiones a MySQL. Los resultados unitarios anteriores son evidencia separada.
+
 Las llamadas HTTP fallidas se manejan explícitamente en los flujos corregidos. Los bloqueos y transacciones implementados necesitan verificación con SQL real y solicitudes concurrentes. La consistencia entre servicios no queda garantizada por una transacción local de JPA.
 
 Auditoría npm del 21 de noviembre: dos avisos moderados ligados a minimatch y karma-webpack, sin avisos altos ni críticos. La actualización forzada de minimatch rompía glob y se descartó. Se conservó el árbol compatible y se repitieron instalación, pruebas y build. Véase EP3_DEPENDENCIAS del frontend.
