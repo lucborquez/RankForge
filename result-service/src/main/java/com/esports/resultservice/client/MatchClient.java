@@ -1,52 +1,35 @@
 package com.esports.resultservice.client;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Component
 public class MatchClient {
-
-    private static final Logger log = LoggerFactory.getLogger(MatchClient.class);
-
-    // Lee el "http://localhost:8087" que configuramos en tu application.properties
     @Value("${match.service.url}")
     private String matchServiceUrl;
-
     private final RestTemplate restTemplate;
-
     public MatchClient() {
         var factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(3000); factory.setReadTimeout(5000);
         this.restTemplate = new RestTemplate(factory);
     }
-
+    public MatchClient(RestTemplate restTemplate) { this.restTemplate = restTemplate; }
     public record Partida(Long id, Long torneoId, Long participanteAId, Long participanteBId, String estado) {}
     public Partida obtener(Long partidaId) {
+        Partida partida;
         try {
-            Partida partida = restTemplate.getForObject(matchServiceUrl + "/api/partidas/" + partidaId, Partida.class);
-            if (partida == null) throw new IllegalStateException("Partida no disponible");
-            return partida;
+            partida = restTemplate.getForObject(matchServiceUrl + "/api/partidas/" + partidaId, Partida.class);
+        } catch (org.springframework.web.client.HttpClientErrorException.NotFound ex) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Partida no encontrada");
         } catch (org.springframework.web.client.RestClientException ex) {
-            throw new IllegalStateException("No se pudo verificar la partida", ex);
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No se pudo verificar la partida");
         }
-    }
-
-    //metodo que usa ResultadoService para verificar si la partida existe
-    public boolean verificarPartidaExiste(Long partidaId) {
-        try {
-            // Arma la URL apuntando al controlador de tu amigo (ej: http://localhost:8087/api/partidas/1)
-            String url = matchServiceUrl + "/api/partidas/" + partidaId;
-
-            // Le pega al endpoint. Si la partida existe, el microservicio de tu compa responde bien (200 OK)
-            restTemplate.getForObject(url, Object.class);
-            return true;
-        } catch (Exception e) {
-            // Si la partida no existe (404) o el puerto 8087 está apagado, salta acá
-            log.error("Error consultando match-service para partidaId {}: {}",
-                    partidaId, e.getMessage());
-            return false;
+        if (partida == null || !java.util.Objects.equals(partidaId, partida.id()) || partida.torneoId() == null
+                || partida.torneoId() <= 0 || partida.estado() == null || partida.estado().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "La fuente devolvió una partida incompleta o distinta");
         }
+        return partida;
     }
 }

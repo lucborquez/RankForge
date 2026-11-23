@@ -13,3 +13,7 @@ Crear, editar, validar por primera vez y anular por primera vez un resultado con
 Repetir una validación ya aplicada o una anulación ya aplicada conserva su idempotencia y permite reintentar la sincronización del ranking. No cambia el resultado ni el motivo original. La consulta remota no bloquea simultáneamente el cierre en otro servicio: la carrera distribuida entre comprobación y guardado permanece pendiente de solución y de aceptación real. Tampoco sustituye el control de finalización con resultados pendientes.
 
 Verificación: 24 pruebas seleccionadas de result-service pasan (reglas, seguridad, sincronización y estado remoto), incluyendo rechazo de las cuatro mutaciones sin guardar ni alterar el estado ante torneo finalizado. Son pruebas unitarias con colaboradores simulados; no constituyen evidencia HTTP/MySQL.
+
+## Errores al consultar partidas
+
+MatchClient distingue partida inexistente (404) de servicio caído o respuesta incompleta/inconsistente (503). Comprueba ID solicitado, torneo positivo y estado informado antes de aceptar la respuesta. Se retiró la consulta booleana antigua sin consumidores, que confundía inexistencia con indisponibilidad. Las 28 pruebas seleccionadas de result-service pasaron el 22 de noviembre a las 23:30; cuatro casos nuevos verifican respuesta coherente, respuesta incompleta/distinta, caída y 404. No se trata de ejecución integrada real.
