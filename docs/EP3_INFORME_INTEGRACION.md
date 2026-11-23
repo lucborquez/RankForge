@@ -45,6 +45,8 @@ Antes de cerrar la entrega deben verificarse con MySQL los bloqueos implementado
 
 ## Documentación y publicación
 
-El frontend contiene ERS-V3-EP3 y un manual DOCX de revisión con cinco páginas. Su formato se comprobó visualmente; aún requiere capturas numeradas de la ejecución real. La [planilla XLSX de APIs](EP3_APIs/RankForge_APIs_EP3.xlsx) documenta 78 rutas con respuestas esperadas por código y aceptación HTTP pendiente. Falta incorporar evidencia observada y generar los dos ZIP sin secretos ni dependencias instaladas.
+El frontend contiene ERS-V3-EP3 y un manual DOCX de revisión con cinco páginas. Su formato se comprobó visualmente; aún requiere capturas numeradas de la ejecución real. La [planilla XLSX de APIs](EP3_APIs/RankForge_APIs_EP3.xlsx) documenta 79 rutas con respuestas esperadas por código y aceptación HTTP pendiente. Falta incorporar evidencia observada y generar los dos ZIP sin secretos ni dependencias instaladas.
 
 Los commits conservan autoría y hora reales, separados al menos diez minutos entre ambos repositorios. La integración final requiere revisar los PR y sus comprobaciones. No se debe fusionar main como entrega completa mientras los criterios pendientes anteriores sigan abiertos.
+
+Los PR de revisión están abiertos en borrador: [backend #7](https://github.com/lucborquez/game/pull/7) y [frontend #5](https://github.com/jzzzn2110/Frontend-eSports-Arena-Manager/pull/5). Consulta del 22 de noviembre: la ejecución [Validar EP2 del frontend](https://github.com/jzzzn2110/Frontend-eSports-Arena-Manager/actions/runs/45096827194), con código a767f9e, terminó satisfactoriamente. El nombre del workflow sigue siendo histórico; su éxito no sustituye la aceptación EP3. No se encontraron ejecuciones de GitHub Actions para la rama backend al consultar la API; allí se dispone de evidencia local, no de CI remoto aprobado.

@@ -8,7 +8,7 @@ Consulta [el arranque local](docs/EP3_ARRANQUE_LOCAL.md), [las reglas de partida
 
 El [informe de integración](docs/EP3_INFORME_INTEGRACION.md) reúne los cambios, la evidencia disponible y lo que falta para aceptar la entrega.
 
-El [catálogo de APIs](docs/EP3_APIs/README.md) incluye la planilla XLSX de 78 rutas con contratos, permisos y respuestas esperadas; la ejecución HTTP está pendiente.
+El [catálogo de APIs](docs/EP3_APIs/README.md) incluye la planilla XLSX de 79 rutas con contratos, permisos y respuestas esperadas; la ejecución HTTP está pendiente.
 
 La [colección Postman](docs/EP3_Postman/README.md) prepara 16 solicitudes de aceptación por rol. Deben ejecutarse manualmente con datos de prueba; aún no representan evidencia de integración.
 
