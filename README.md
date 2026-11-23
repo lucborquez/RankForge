@@ -8,6 +8,8 @@ Consulta [el arranque local](docs/EP3_ARRANQUE_LOCAL.md), [las reglas de partida
 
 El [informe de integración](docs/EP3_INFORME_INTEGRACION.md) reúne los cambios, la evidencia disponible y lo que falta para aceptar la entrega.
 
+El [catálogo de APIs](docs/EP3_APIs/README.md) incluye la planilla XLSX de 78 rutas con contratos, permisos y respuestas esperadas; la ejecución HTTP está pendiente.
+
 eSports Arena Manager es una plataforma backend orientada a la administración de torneos competitivos de videojuegos.
 El sistema fue desarrollado bajo una arquitectura de microservicios utilizando Spring Boot, permitiendo separar responsabilidades y mantener una solución modular, escalable y mantenible.
 

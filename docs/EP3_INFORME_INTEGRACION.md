@@ -43,6 +43,6 @@ Antes de cerrar la entrega deben resolverse la creación concurrente de partidas
 
 ## Documentación y publicación
 
-El frontend contiene ERS-V3-EP3 y un manual DOCX de revisión con cinco páginas. Su formato se comprobó visualmente; aún requiere capturas numeradas de la ejecución real. Falta completar la planilla XLSX de APIs con respuestas esperadas claramente separadas de respuestas observadas y generar los dos ZIP sin secretos ni dependencias instaladas.
+El frontend contiene ERS-V3-EP3 y un manual DOCX de revisión con cinco páginas. Su formato se comprobó visualmente; aún requiere capturas numeradas de la ejecución real. La [planilla XLSX de APIs](EP3_APIs/RankForge_APIs_EP3.xlsx) documenta 78 rutas con respuestas esperadas por código y aceptación HTTP pendiente. Falta incorporar evidencia observada y generar los dos ZIP sin secretos ni dependencias instaladas.
 
 Los commits conservan autoría y hora reales, separados al menos diez minutos entre ambos repositorios. La integración final requiere revisar los PR y sus comprobaciones. No se debe fusionar main como entrega completa mientras los criterios pendientes anteriores sigan abiertos.
