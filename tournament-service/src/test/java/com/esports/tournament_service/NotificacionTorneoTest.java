@@ -32,13 +32,27 @@ class NotificacionTorneoTest {
         var torneo = new Torneo(); torneo.setId(1L); torneo.setEstado("EN_CURSO");
         when(torneos.buscarParaActualizar(1L)).thenReturn(Optional.of(torneo)); when(torneos.save(any())).thenAnswer(c -> c.getArgument(0));
         var dto = new CambioEstadoDTO(); dto.setEstado("FINALIZADO");
-        new TorneoService(torneos, juego, avisos).cambiarEstado(1L, dto);
+        var ranking = mock(com.esports.tournament_service.client.ClasificacionClient.class);
+        when(ranking.cerrar(1L, "Bearer prueba")).thenReturn(Map.of(1, 7L, 2, 8L));
+        new TorneoService(torneos, juego, avisos, ranking).cambiarEstado(1L, dto, "Bearer prueba");
+        assertEquals(Map.of(1, 7L, 2, 8L), torneo.getClasificacionFinal());
         verify(avisos).publicar(1L, "CAMBIO_ESTADO", "Estado del torneo: EN_CURSO → FINALIZADO");
     }
     @Test void transicionRechazadaNoPublicaAviso() {
         var avisos = mock(NotificacionTorneoService.class); var juego = mock(JuegoClient.class);
         var torneo = new Torneo(); torneo.setEstado("FINALIZADO"); when(torneos.buscarParaActualizar(1L)).thenReturn(Optional.of(torneo));
         var dto = new CambioEstadoDTO(); dto.setEstado("ABIERTO");
-        assertThrows(RuntimeException.class, () -> new TorneoService(torneos, juego, avisos).cambiarEstado(1L, dto)); verifyNoInteractions(avisos);
+        assertThrows(RuntimeException.class, () -> new TorneoService(torneos, juego, avisos, mock(com.esports.tournament_service.client.ClasificacionClient.class)).cambiarEstado(1L, dto, "Bearer prueba")); verifyNoInteractions(avisos);
+    }
+    @Test void cierreRechazadoConservaEstadoYAvisos() {
+        var avisos = mock(NotificacionTorneoService.class);
+        var ranking = mock(com.esports.tournament_service.client.ClasificacionClient.class);
+        var torneo = new Torneo(); torneo.setEstado("EN_CURSO");
+        when(torneos.buscarParaActualizar(1L)).thenReturn(Optional.of(torneo));
+        when(ranking.cerrar(1L, "Bearer prueba")).thenThrow(new ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT));
+        var dto = new CambioEstadoDTO(); dto.setEstado("FINALIZADO");
+        assertThrows(ResponseStatusException.class, () -> new TorneoService(torneos, mock(JuegoClient.class), avisos, ranking).cambiarEstado(1L, dto, "Bearer prueba"));
+        assertEquals("EN_CURSO", torneo.getEstado());
+        verify(torneos, never()).save(any()); verifyNoInteractions(avisos);
     }
 }

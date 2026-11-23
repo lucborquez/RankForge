@@ -24,8 +24,12 @@ public class TorneoService {
     private final JuegoClient juegoClient;
     private final NotificacionTorneoService notificaciones;
 
+    private final com.esports.tournament_service.client.ClasificacionClient clasificacion;
+
     public TorneoService(TorneoRepository torneoRepository,
-                         JuegoClient juegoClient, NotificacionTorneoService notificaciones) {
+                         JuegoClient juegoClient, NotificacionTorneoService notificaciones,
+                         com.esports.tournament_service.client.ClasificacionClient clasificacion) {
+        this.clasificacion = clasificacion;
         this.torneoRepository = torneoRepository;
         this.juegoClient = juegoClient;
         this.notificaciones = notificaciones;
@@ -114,7 +118,7 @@ public class TorneoService {
 
     // Cambiar estado del torneo
     @Transactional
-    public TorneoResponseDTO cambiarEstado(Long id, CambioEstadoDTO dto) {
+    public TorneoResponseDTO cambiarEstado(Long id, CambioEstadoDTO dto, String authorization) {
         Torneo torneo = torneoRepository.buscarParaActualizar(id)
                 .orElseThrow(() -> new RuntimeException(
                         "Torneo no encontrado con ID: " + id));
@@ -124,6 +128,9 @@ public class TorneoService {
         validarTransicionEstado(estadoAnterior, dto.getEstado());
         if ("ABIERTO".equals(dto.getEstado())) validarJuegoActivo(torneo.getJuegoId());
 
+        if ("FINALIZADO".equals(dto.getEstado())) {
+            torneo.getClasificacionFinal().putAll(clasificacion.cerrar(id, authorization));
+        }
         torneo.setEstado(dto.getEstado());
         Torneo actualizado = torneoRepository.save(torneo);
         notificaciones.publicar(id, "CAMBIO_ESTADO", "Estado del torneo: " + estadoAnterior + " → " + dto.getEstado());

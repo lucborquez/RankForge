@@ -21,6 +21,9 @@ public class ResultadosClient {
     public record Partida(Long id, Long torneoId, Long participanteAId, Long participanteBId, String estado) {}
     public record Resultado(Long id, Long partidaId, Integer puntajeA, Integer puntajeB, String estadoValidacion) {}
     public List<Marcador> obtener(Long torneoId) {
+        return obtener(torneoId, false);
+    }
+    public List<Marcador> obtener(Long torneoId, boolean cierre) {
         Partida[] partidas = http.getForObject(partidasUrl + "/api/partidas/torneo/" + torneoId, Partida[].class);
         if (partidas == null) throw new IllegalStateException("No se pudieron consultar las partidas");
         List<Marcador> marcadores = new ArrayList<>();
@@ -29,6 +32,11 @@ public class ResultadosClient {
             if ("CANCELADA".equals(p.estado())) continue;
             Resultado[] resultados = http.getForObject(resultadosUrl + "/api/resultados/partida/" + p.id(), Resultado[].class);
             if (resultados == null) throw new IllegalStateException("No se pudieron consultar los resultados");
+            if (cierre && (resultados.length != 1 || resultados[0] == null
+                    || !"VALIDADO".equals(resultados[0].estadoValidacion()))) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.CONFLICT, "Hay partidas sin un resultado validado");
+            }
             for (Resultado r : resultados) {
                 if (r == null || !p.id().equals(r.partidaId())) throw new IllegalStateException("Resultado inconsistente");
                 marcadores.add(new Marcador(r.id(), p.id(), p.participanteAId(), p.participanteBId(), r.puntajeA(), r.puntajeB(), r.estadoValidacion()));

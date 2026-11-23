@@ -14,6 +14,30 @@ public class ClasificacionClient {
         this.url = url; var factory = new SimpleClientHttpRequestFactory(); factory.setConnectTimeout(3000); factory.setReadTimeout(5000); http = new RestTemplate(factory);
     }
     public record Posicion(Long participanteId, Integer posicion) {}
+    public java.util.Map<Integer, Long> cerrar(Long torneoId, String authorization) {
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.set("Authorization", authorization);
+        Posicion[] tabla;
+        try {
+            tabla = http.postForObject(url + "/api/rankings/torneo/" + torneoId + "/recalcular?cierre=true",
+                    new org.springframework.http.HttpEntity<Void>(headers), Posicion[].class);
+        } catch (org.springframework.web.client.HttpClientErrorException.Conflict ex) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El cierre requiere resultados validados para todas las partidas vigentes");
+        } catch (org.springframework.web.client.RestClientException ex) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No se pudo confirmar la clasificación final");
+        }
+        var puestos = new java.util.HashMap<Integer, Long>();
+        var participantes = new java.util.HashSet<Long>();
+        if (tabla == null || tabla.length == 0) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Clasificación final no disponible");
+        for (Posicion fila : tabla) {
+            if (fila == null || fila.posicion() == null || fila.posicion() < 1 || fila.posicion() > tabla.length
+                    || fila.participanteId() == null || fila.participanteId() <= 0 || !participantes.add(fila.participanteId())
+                    || puestos.put(fila.posicion(), fila.participanteId()) != null) {
+                throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Clasificación final inconsistente");
+            }
+        }
+        return puestos;
+    }
     public boolean coincide(Long torneoId, Integer posicion, Long participanteId) {
         Posicion[] tabla;
         try { tabla = http.getForObject(url + "/api/rankings/torneo/" + torneoId, Posicion[].class); }

@@ -29,4 +29,12 @@ class PremioServiceTest {
         verify(notificaciones).publicar(eq(1L), eq("PREMIO_ASIGNADO"), contains("#7"));
     }
     @Test void rechazaPosicionDuplicada() { torneo("FINALIZADO"); when(premios.existsByTorneoIdAndPosicion(1L, 1)).thenReturn(true); assertThrows(ResponseStatusException.class, () -> service.asignar(1L, dto)); verify(premios, never()).save(any()); }
+    @Test void premioConservaElPuestoConfirmadoAlCerrar() {
+        var torneo = new Torneo(); torneo.setEstado("FINALIZADO");
+        torneo.getClasificacionFinal().put(1, 8L);
+        when(torneos.buscarParaActualizar(1L)).thenReturn(Optional.of(torneo));
+        assertEquals(409, assertThrows(ResponseStatusException.class, () -> service.asignar(1L, dto)).getStatusCode().value());
+        verifyNoInteractions(ranking, notificaciones);
+        verify(premios, never()).save(any());
+    }
 }

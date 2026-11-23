@@ -9,5 +9,8 @@ public class ReconstruccionRankingController {
     private final ReconstruccionRanking service;
     public ReconstruccionRankingController(ReconstruccionRanking service) { this.service = service; }
     @PostMapping("/{torneoId}/recalcular")
-    public List<Ranking> recalcular(@PathVariable Long torneoId) { return service.recalcular(torneoId); }
+    public List<Ranking> recalcular(@PathVariable Long torneoId,
+            @RequestParam(defaultValue = "false") boolean cierre) {
+        return service.recalcular(torneoId, cierre);
+    }
 }

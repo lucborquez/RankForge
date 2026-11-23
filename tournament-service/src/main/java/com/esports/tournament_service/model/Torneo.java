@@ -50,4 +50,10 @@ public class Torneo {
     // Ej: "5v5", "1v1", "Battle Royale"
     @Column(nullable = false)
     private String modalidad;
+
+    @ElementCollection
+    @CollectionTable(name = "torneo_clasificacion_final", joinColumns = @JoinColumn(name = "torneo_id"))
+    @MapKeyColumn(name = "posicion")
+    @Column(name = "participante_id", nullable = false)
+    private java.util.Map<Integer, Long> clasificacionFinal = new java.util.HashMap<>();
 }

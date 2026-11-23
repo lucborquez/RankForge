@@ -28,7 +28,10 @@ public class PremioService {
         if (!"FINALIZADO".equals(torneo.getEstado())) throw new ResponseStatusException(HttpStatus.CONFLICT, "Finaliza el torneo antes de asignar premios");
         if (dto.posicion() == null || dto.posicion() <= 0 || dto.participanteId() == null || dto.participanteId() <= 0 || dto.descripcion() == null || dto.descripcion().isBlank() || dto.descripcion().length() > 500) throw new IllegalArgumentException("Datos del premio inválidos");
         if (premios.existsByTorneoIdAndPosicion(torneoId, dto.posicion())) throw new ResponseStatusException(HttpStatus.CONFLICT, "Esta posición ya tiene un premio");
-        if (!clasificacion.coincide(torneoId, dto.posicion(), dto.participanteId())) throw new ResponseStatusException(HttpStatus.CONFLICT, "El participante no ocupa esa posición en la clasificación");
+        boolean puestoCorrecto = torneo.getClasificacionFinal().isEmpty()
+                ? clasificacion.coincide(torneoId, dto.posicion(), dto.participanteId())
+                : dto.participanteId().equals(torneo.getClasificacionFinal().get(dto.posicion()));
+        if (!puestoCorrecto) throw new ResponseStatusException(HttpStatus.CONFLICT, "El participante no ocupa esa posición en la clasificación");
         Premio premio = new Premio(); premio.setTorneoId(torneoId); premio.setPosicion(dto.posicion()); premio.setParticipanteId(dto.participanteId()); premio.setDescripcion(dto.descripcion().trim());
         Premio guardado = premios.save(premio);
         notificaciones.publicar(torneoId, "PREMIO_ASIGNADO", "Premio asignado al participante #" + dto.participanteId() + " por el puesto " + dto.posicion() + ": " + dto.descripcion().trim());

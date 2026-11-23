@@ -34,7 +34,8 @@ public class TorneoAdminController {
 
     @PatchMapping("/{id}/estado")
     public ResponseEntity<TorneoResponseDTO> cambiarEstado(@PathVariable Long id,
-                                                          @Valid @RequestBody CambioEstadoDTO dto) {
-        return ResponseEntity.ok(torneoService.cambiarEstado(id, dto));
+                                                          @Valid @RequestBody CambioEstadoDTO dto,
+                                                          @RequestHeader("Authorization") String authorization) {
+        return ResponseEntity.ok(torneoService.cambiarEstado(id, dto, authorization));
     }
 }

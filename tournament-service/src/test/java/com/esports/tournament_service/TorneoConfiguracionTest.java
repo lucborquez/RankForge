@@ -14,7 +14,7 @@ class TorneoConfiguracionTest {
     TorneoRepository repo = mock(TorneoRepository.class);
     JuegoClient juegos = mock(JuegoClient.class);
     NotificacionTorneoService avisos = mock(NotificacionTorneoService.class);
-    TorneoService service = new TorneoService(repo, juegos, avisos);
+    TorneoService service = new TorneoService(repo, juegos, avisos, mock(com.esports.tournament_service.client.ClasificacionClient.class));
     void rechaza(String estado) {
         Torneo t = new Torneo(); t.setEstado(estado); when(repo.buscarParaActualizar(1L)).thenReturn(Optional.of(t));
         var error = assertThrows(ResponseStatusException.class, () -> service.actualizar(1L, new TorneoRequestDTO()));
