@@ -4,6 +4,6 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 public interface RankingTorneoLockRepository extends JpaRepository<RankingTorneoLock, Long> {
     @Modifying
-    @Query(value = "INSERT INTO ranking_torneo_lock (torneo_id) VALUES (:id) ON DUPLICATE KEY UPDATE torneo_id = :id", nativeQuery = true)
+    @Query("insert into RankingTorneoLock (torneoId) values (:id) on conflict (torneoId) do update set torneoId = excluded.torneoId")
     void bloquear(@Param("id") Long id);
 }

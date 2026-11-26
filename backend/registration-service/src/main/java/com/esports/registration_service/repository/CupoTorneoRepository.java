@@ -5,8 +5,8 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 public interface CupoTorneoRepository extends JpaRepository<CupoTorneo, Long> {
-    /** MySQL/InnoDB mantiene el bloqueo de la fila hasta commit/rollback. */
+    /** La base de datos mantiene el bloqueo de la fila hasta commit/rollback. */
     @Modifying
-    @Query(value = "INSERT INTO inscripcion_cupos (torneo_id) VALUES (:torneoId) ON DUPLICATE KEY UPDATE torneo_id = :torneoId", nativeQuery = true)
+    @Query("insert into CupoTorneo (torneoId) values (:torneoId) on conflict (torneoId) do update set torneoId = excluded.torneoId")
     void bloquear(@Param("torneoId") Long torneoId);
 }

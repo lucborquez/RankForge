@@ -5,8 +5,8 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 public interface PartidaTorneoLockRepository extends JpaRepository<PartidaTorneoLock, Long> {
-    /** MySQL/InnoDB mantiene el bloqueo de la fila hasta commit/rollback. */
+    /** La base de datos mantiene el bloqueo de la fila hasta commit/rollback. */
     @Modifying
-    @Query(value = "INSERT INTO partida_torneo_locks (torneo_id) VALUES (:torneoId) ON DUPLICATE KEY UPDATE torneo_id = :torneoId", nativeQuery = true)
+    @Query("insert into PartidaTorneoLock (torneoId) values (:torneoId) on conflict (torneoId) do update set torneoId = excluded.torneoId")
     void bloquear(@Param("torneoId") Long torneoId);
 }

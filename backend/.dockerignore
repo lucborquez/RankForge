@@ -1,0 +1,9 @@
+**
+!*/pom.xml
+!*/
+!*/src/
+!*/src/main/
+!*/src/main/**
+!auth-service/mvnw
+!auth-service/.mvn/
+!auth-service/.mvn/**
