@@ -1,0 +1,36 @@
+envVarGroups:
+  - name: rankforge-signing
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+
+services:
+  - type: web
+    name: rankforge-luc-auth
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - fromGroup: rankforge-signing
+      - key: MODULE
+        value: auth-service
+      - key: SERVER_PORT
+        value: "10000"
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+      - key: DB_HOST
+        value: dpg-dc4b3u3l550s738nsqfg-a
+      - key: DB_NAME
+        fromDatabase:
+          name: RankForge
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: RankForge
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: RankForge
+          property: password
