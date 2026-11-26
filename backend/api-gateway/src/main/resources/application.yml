@@ -10,52 +10,52 @@ spring:
           # (en vez de localhost:8081, localhost:8082, etc. fijos).
           routes:
             - id: auth-service
-              uri: lb://auth-service
+              uri: ${AUTH_ROUTE:lb://auth-service}
               predicates:
                 - Path=/api/auth/**
 
             - id: user-service
-              uri: lb://user-service
+              uri: ${USER_ROUTE:lb://user-service}
               predicates:
                 - Path=/api/usuarios/**
 
             - id: game-service
-              uri: lb://game-service
+              uri: ${GAME_ROUTE:lb://game-service}
               predicates:
                 - Path=/api/juegos/**
 
             - id: team-service
-              uri: lb://team-service
+              uri: ${TEAM_ROUTE:lb://team-service}
               predicates:
                 - Path=/api/equipos/**
 
             - id: tournament-service
-              uri: lb://tournament-service
+              uri: ${TOURNAMENT_ROUTE:lb://tournament-service}
               predicates:
                 - Path=/api/torneos/**
 
             - id: registration-service
-              uri: lb://registration-service
+              uri: ${REGISTRATION_ROUTE:lb://registration-service}
               predicates:
                 - Path=/api/inscripciones/**
 
             - id: match-service
-              uri: lb://match-service
+              uri: ${MATCH_ROUTE:lb://match-service}
               predicates:
                 - Path=/api/partidas/**
 
             - id: result-service
-              uri: lb://result-service
+              uri: ${RESULT_ROUTE:lb://result-service}
               predicates:
                 - Path=/api/resultados/**
 
             - id: ranking-service
-              uri: lb://ranking-service
+              uri: ${RANKING_ROUTE:lb://ranking-service}
               predicates:
                 - Path=/api/rankings/**
 
             - id: sanction-service
-              uri: lb://sanction-service
+              uri: ${SANCTION_ROUTE:lb://sanction-service}
               predicates:
                 - Path=/api/sanciones/**
 

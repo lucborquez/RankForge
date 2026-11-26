@@ -7,3 +7,5 @@
 !auth-service/mvnw
 !auth-service/.mvn/
 !auth-service/.mvn/**
+!render/start.sh
+!render/peers

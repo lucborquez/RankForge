@@ -3,8 +3,99 @@ envVarGroups:
     envVars:
       - key: JWT_SECRET
         generateValue: true
+      - key: MESH_SECRET
+        generateValue: true
 
 services:
+  - type: web
+    name: rankforge-luc-gateway
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - fromGroup: rankforge-signing
+      - key: MODULE
+        value: api-gateway
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+      - key: FRONTEND_ORIGINS
+        value: https://rank-forge-three.vercel.app
+      - key: GAME_ROUTE
+        value: http://127.0.0.1:8081
+      - key: USER_ROUTE
+        value: http://127.0.0.1:8082
+      - key: AUTH_ROUTE
+        value: http://127.0.0.1:8083
+      - key: TEAM_ROUTE
+        value: http://127.0.0.1:8084
+      - key: TOURNAMENT_ROUTE
+        value: http://127.0.0.1:8085
+      - key: REGISTRATION_ROUTE
+        value: http://127.0.0.1:8086
+      - key: MATCH_ROUTE
+        value: http://127.0.0.1:8087
+      - key: RESULT_ROUTE
+        value: http://127.0.0.1:8088
+      - key: RANKING_ROUTE
+        value: http://127.0.0.1:8089
+      - key: SANCTION_ROUTE
+        value: http://127.0.0.1:8090
+  - type: web
+    name: rankforge-luc-game
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - fromGroup: rankforge-signing
+      - key: MODULE
+        value: game-service
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+      - key: DB_HOST
+        value: dpg-dc4b3u3l550s738nsqfg-a
+      - key: DB_NAME
+        fromDatabase:
+          name: RankForge
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: RankForge
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: RankForge
+          property: password
+  - type: web
+    name: rankforge-luc-user
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - fromGroup: rankforge-signing
+      - key: MODULE
+        value: user-service
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+      - key: DB_HOST
+        value: dpg-dc4b3u3l550s738nsqfg-a
+      - key: DB_NAME
+        fromDatabase:
+          name: RankForge
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: RankForge
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: RankForge
+          property: password
   - type: web
     name: rankforge-luc-auth
     runtime: docker
@@ -16,8 +107,195 @@ services:
       - fromGroup: rankforge-signing
       - key: MODULE
         value: auth-service
-      - key: SERVER_PORT
-        value: "10000"
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+      - key: DB_HOST
+        value: dpg-dc4b3u3l550s738nsqfg-a
+      - key: DB_NAME
+        fromDatabase:
+          name: RankForge
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: RankForge
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: RankForge
+          property: password
+  - type: web
+    name: rankforge-luc-team
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - fromGroup: rankforge-signing
+      - key: MODULE
+        value: team-service
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+      - key: DB_HOST
+        value: dpg-dc4b3u3l550s738nsqfg-a
+      - key: DB_NAME
+        fromDatabase:
+          name: RankForge
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: RankForge
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: RankForge
+          property: password
+  - type: web
+    name: rankforge-luc-tournament
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - fromGroup: rankforge-signing
+      - key: MODULE
+        value: tournament-service
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+      - key: DB_HOST
+        value: dpg-dc4b3u3l550s738nsqfg-a
+      - key: DB_NAME
+        fromDatabase:
+          name: RankForge
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: RankForge
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: RankForge
+          property: password
+  - type: web
+    name: rankforge-luc-registration
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - fromGroup: rankforge-signing
+      - key: MODULE
+        value: registration-service
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+      - key: DB_HOST
+        value: dpg-dc4b3u3l550s738nsqfg-a
+      - key: DB_NAME
+        fromDatabase:
+          name: RankForge
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: RankForge
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: RankForge
+          property: password
+  - type: web
+    name: rankforge-luc-match
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - fromGroup: rankforge-signing
+      - key: MODULE
+        value: match-service
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+      - key: DB_HOST
+        value: dpg-dc4b3u3l550s738nsqfg-a
+      - key: DB_NAME
+        fromDatabase:
+          name: RankForge
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: RankForge
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: RankForge
+          property: password
+  - type: web
+    name: rankforge-luc-result
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - fromGroup: rankforge-signing
+      - key: MODULE
+        value: result-service
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+      - key: DB_HOST
+        value: dpg-dc4b3u3l550s738nsqfg-a
+      - key: DB_NAME
+        fromDatabase:
+          name: RankForge
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: RankForge
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: RankForge
+          property: password
+  - type: web
+    name: rankforge-luc-ranking
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - fromGroup: rankforge-signing
+      - key: MODULE
+        value: ranking-service
+      - key: EUREKA_CLIENT_ENABLED
+        value: "false"
+      - key: DB_HOST
+        value: dpg-dc4b3u3l550s738nsqfg-a
+      - key: DB_NAME
+        fromDatabase:
+          name: RankForge
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: RankForge
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: RankForge
+          property: password
+  - type: web
+    name: rankforge-luc-sanction
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - fromGroup: rankforge-signing
+      - key: MODULE
+        value: sanction-service
       - key: EUREKA_CLIENT_ENABLED
         value: "false"
       - key: DB_HOST
